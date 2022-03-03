@@ -95,7 +95,7 @@ resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = 
 }
 
 // Dependent resources for the Azure Machine Learning workspace
-module keyvault 'modules/keyvault.bicep' = {
+module keyvault 'modules/keyvault-existingvnet.bicep' = {
   name: 'kv-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -107,7 +107,7 @@ module keyvault 'modules/keyvault.bicep' = {
   }
 }
 
-module storage 'modules/storage.bicep' = {
+module storage 'modules/storage-existingvnet.bicep' = {
   name: 'st${name}${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -121,7 +121,7 @@ module storage 'modules/storage.bicep' = {
   }
 }
 
-module containerRegistry 'modules/containerregistry.bicep' = {
+module containerRegistry 'modules/containerregistry-existingvnet.bicep' = {
   name: 'cr${name}${uniqueSuffix}-deployment'
   params: {
     location: location
