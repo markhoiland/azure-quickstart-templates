@@ -12,7 +12,13 @@ param location string = resourceGroup().location
 @description('Set of tags to apply to all resources.')
 param tags object = {}
 
-/*
+@description('New or existing virtual network?')
+@allowed([
+  'new'
+  'existing'
+])
+param vnetNewOrExisting string = 'new'
+
 ## New Vnet Params
 @description('Virtual network address prefix')
 param vnetAddressPrefix string = '192.168.0.0/16'
@@ -25,7 +31,6 @@ param scoringSubnetPrefix string = '192.168.1.0/24'
 
 @description('Bastion subnet address prefix')
 param azureBastionSubnetPrefix string = '192.168.250.0/27'
-*/
 
 @description('Existing Virtual network name')
 param vnetName string
@@ -62,8 +67,8 @@ var name = toLower('${prefix}')
 // Create a short, unique suffix, that will be unique to each resource group
 var uniqueSuffix = substring(uniqueString(resourceGroup().id), 0, 4)
 
-/*
-// Virtual network and network security group
+
+// Virtual network and network security group if New is selected
 module nsg 'modules/nsg.bicep' = if (vnetNewOrExisting == 'new') { 
   name: 'nsg-${name}-${uniqueSuffix}-deployment'
   params: {
@@ -86,16 +91,100 @@ module vnet 'modules/vnet.bicep' = if (vnetNewOrExisting == 'new') {
     tags: tags
   }
 }
-*/
 
-// Creating symbolic name for an existing virtual network
-resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = {
+// Creating symbolic name if an existing virtual network is selected
+resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = if (vnetNewOrExisting == 'existing') {
   name: vnetName
   scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
-// Dependent resources for the Azure Machine Learning workspace
-module keyvault 'modules/keyvault.bicep' = {
+// Dependent resources for the Azure Machine Learning workspace if new vnet is selected
+module keyvault 'modules/keyvault.bicep' = if (vnetNewOrExisting == 'new') {
+  name: 'kv-${name}-${uniqueSuffix}-deployment'
+  params: {
+    location: location
+    keyvaultName: 'kv-${name}-${uniqueSuffix}'
+    keyvaultPleName: 'ple-${name}-${uniqueSuffix}-kv'
+    subnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
+    virtualNetworkId: '${vnet.outputs.id}'
+    tags: tags
+  }
+}
+
+module storage 'modules/storage.bicep' = if (vnetNewOrExisting == 'new') {
+  name: 'st${name}${uniqueSuffix}-deployment'
+  params: {
+    location: location
+    storageName: 'st${name}${uniqueSuffix}'
+    storagePleBlobName: 'ple-${name}-${uniqueSuffix}-st-blob'
+    storagePleFileName: 'ple-${name}-${uniqueSuffix}-st-file'
+    storageSkuName: 'Standard_LRS'
+    subnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
+    virtualNetworkId: '${vnet.outputs.id}'
+    tags: tags
+  }
+}
+
+module containerRegistry 'modules/containerregistry.bicep' = if (vnetNewOrExisting == 'new') {
+  name: 'cr${name}${uniqueSuffix}-deployment'
+  params: {
+    location: location
+    containerRegistryName: 'cr${name}${uniqueSuffix}'
+    containerRegistryPleName: 'ple-${name}-${uniqueSuffix}-cr'
+    subnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
+    virtualNetworkId: '${vnet.outputs.id}'
+    tags: tags
+  }
+}
+
+module applicationInsights 'modules/applicationinsights.bicep' = if (vnetNewOrExisting == 'new') {
+  name: 'appi-${name}-${uniqueSuffix}-deployment'
+  params: {
+    location: location
+    applicationInsightsName: 'appi-${name}-${uniqueSuffix}'
+    tags: tags
+  }
+}
+
+module azuremlWorkspace 'modules/machinelearning.bicep' = if (vnetNewOrExisting == 'new') {
+  name: 'mlw-${name}-${uniqueSuffix}-deployment'
+  params: {
+    // workspace organization
+    machineLearningName: 'mlw-${name}-${uniqueSuffix}'
+    machineLearningFriendlyName: 'Private link endpoint sample workspace'
+    machineLearningDescription: 'This is an example workspace having a private link endpoint.'
+    location: location
+    prefix: name
+    tags: tags
+    vnetNewOrExisting: vnetNewOrExisting
+
+    // dependent resources
+    applicationInsightsId: applicationInsights.outputs.applicationInsightsId
+    containerRegistryId: containerRegistry.outputs.containerRegistryId
+    keyVaultId: keyvault.outputs.keyvaultId
+    storageAccountId: storage.outputs.storageId
+
+    // networking
+    subnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
+    computeSubnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
+    aksSubnetId: '${vnet.outputs.id}/subnets/${scoringSubnetName}'
+    virtualNetworkId: '${vnet.outputs.id}'
+    machineLearningPleName: 'ple-${name}-${uniqueSuffix}-mlw'
+
+    // compute
+    amlComputePublicIp: amlComputePublicIp
+    mlAksName: 'aks-${name}-${uniqueSuffix}'
+  }
+  dependsOn: [
+    keyvault
+    containerRegistry
+    applicationInsights
+    storage
+  ]
+}
+
+// Dependent resources for the Azure Machine Learning workspace if existing vnet is selected
+module keyvault 'modules/keyvault.bicep' = if (vnetNewOrExisting == 'existing') {
   name: 'kv-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -107,7 +196,7 @@ module keyvault 'modules/keyvault.bicep' = {
   }
 }
 
-module storage 'modules/storage.bicep' = {
+module storage 'modules/storage.bicep' = if (vnetNewOrExisting == 'existing') {
   name: 'st${name}${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -121,7 +210,7 @@ module storage 'modules/storage.bicep' = {
   }
 }
 
-module containerRegistry 'modules/containerregistry.bicep' = {
+module containerRegistry 'modules/containerregistry.bicep' = if (vnetNewOrExisting == 'existing') {
   name: 'cr${name}${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -133,7 +222,7 @@ module containerRegistry 'modules/containerregistry.bicep' = {
   }
 }
 
-module applicationInsights 'modules/applicationinsights.bicep' = {
+module applicationInsights 'modules/applicationinsights.bicep' = if (vnetNewOrExisting == 'existing') {
   name: 'appi-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -142,7 +231,7 @@ module applicationInsights 'modules/applicationinsights.bicep' = {
   }
 }
 
-module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
+module azuremlWorkspace 'modules/machinelearning.bicep' = if (vnetNewOrExisting == 'existing') {
   name: 'mlw-${name}-${uniqueSuffix}-deployment'
   params: {
     // workspace organization
@@ -152,6 +241,7 @@ module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
     location: location
     prefix: name
     tags: tags
+    vnetNewOrExisting: vnetNewOrExisting
 
     // dependent resources
     applicationInsightsId: applicationInsights.outputs.applicationInsightsId
@@ -178,14 +268,13 @@ module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
   ]
 }
 
-/*
 // Optional VM and Bastion jumphost to help access the network isolated environment
 module dsvm 'modules/dsvmjumpbox.bicep' = if (deployJumphost) {
   name: 'vm-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
     virtualMachineName: 'vm-${name}-${uniqueSuffix}'
-    subnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
+    subnetId: '${vnet.outputs.id}/subnets/${trainingSubnetName}'
     adminUsername: dsvmJumpboxUsername
     adminPassword: dsvmJumpboxPassword
     networkSecurityGroupId: nsg.outputs.networkSecurityGroup 
@@ -204,4 +293,3 @@ module bastion 'modules/bastion.bicep' = if (deployJumphost) {
     vnetexisting
   ]
 }
-*/
