@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.4.1124.51302",
-      "templateHash": "2185947902629815755"
+      "templateHash": "1385825705907256158"
     }
   },
   "parameters": {
@@ -130,7 +130,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "12942824693449975193"
+              "templateHash": "15094464157484106588"
             }
           },
           "parameters": {
@@ -228,47 +228,6 @@
               "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvaultName'))]"
               ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-01-01",
-              "name": "[variables('privateDnsZoneName')]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/vault-PrivateDnsZoneGroup', parameters('keyvaultPleName'))]",
-              "properties": {
-                "privateDnsZoneConfigs": [
-                  {
-                    "name": "[variables('privateDnsZoneName')]",
-                    "properties": {
-                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
-                    }
-                  }
-                ]
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('keyvaultPleName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-01-01",
-              "name": "[format('{0}/{1}', variables('privateDnsZoneName'), uniqueString(resourceId('Microsoft.KeyVault/vaults', parameters('keyvaultName'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[parameters('virtualNetworkId')]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvaultName'))]",
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
-              ]
             }
           ],
           "outputs": {
@@ -322,7 +281,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "10314405918172506604"
+              "templateHash": "7412947141314296568"
             }
           },
           "parameters": {
@@ -504,88 +463,6 @@
               "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))]"
               ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-01-01",
-              "name": "[variables('blobPrivateDnsZoneName')]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/blob-PrivateDnsZoneGroup', parameters('storagePleBlobName'))]",
-              "properties": {
-                "privateDnsZoneConfigs": [
-                  {
-                    "name": "[variables('blobPrivateDnsZoneName')]",
-                    "properties": {
-                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]"
-                    }
-                  }
-                ]
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('storagePleBlobName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-01-01",
-              "name": "[format('{0}/{1}', variables('blobPrivateDnsZoneName'), uniqueString(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[parameters('virtualNetworkId')]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-01-01",
-              "name": "[variables('filePrivateDnsZoneName')]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/flie-PrivateDnsZoneGroup', parameters('storagePleFileName'))]",
-              "properties": {
-                "privateDnsZoneConfigs": [
-                  {
-                    "name": "[variables('filePrivateDnsZoneName')]",
-                    "properties": {
-                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('filePrivateDnsZoneName'))]"
-                    }
-                  }
-                ]
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('filePrivateDnsZoneName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('storagePleFileName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-01-01",
-              "name": "[format('{0}/{1}', variables('filePrivateDnsZoneName'), uniqueString(resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[parameters('virtualNetworkId')]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('filePrivateDnsZoneName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))]"
-              ]
             }
           ],
           "outputs": {
@@ -633,7 +510,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "10616715855710123481"
+              "templateHash": "6175863546487875967"
             }
           },
           "parameters": {
@@ -737,47 +614,6 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.ContainerRegistry/registries', variables('containerRegistryNameCleaned'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones",
-              "apiVersion": "2020-01-01",
-              "name": "[variables('privateDnsZoneName')]",
-              "location": "global"
-            },
-            {
-              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-              "apiVersion": "2020-06-01",
-              "name": "[format('{0}/{1}-PrivateDnsZoneGroup', parameters('containerRegistryPleName'), variables('groupName'))]",
-              "properties": {
-                "privateDnsZoneConfigs": [
-                  {
-                    "name": "[variables('privateDnsZoneName')]",
-                    "properties": {
-                      "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
-                    }
-                  }
-                ]
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('containerRegistryPleName'))]"
-              ]
-            },
-            {
-              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-              "apiVersion": "2020-01-01",
-              "name": "[format('{0}/{1}', variables('privateDnsZoneName'), uniqueString(resourceId('Microsoft.ContainerRegistry/registries', variables('containerRegistryNameCleaned'))))]",
-              "location": "global",
-              "properties": {
-                "registrationEnabled": false,
-                "virtualNetwork": {
-                  "id": "[parameters('virtualNetworkId')]"
-                }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]",
                 "[resourceId('Microsoft.ContainerRegistry/registries', variables('containerRegistryNameCleaned'))]"
               ]
             }
@@ -943,7 +779,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "13483762460510272164"
+              "templateHash": "8645624844107800364"
             }
           },
           "parameters": {
@@ -1109,7 +945,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.4.1124.51302",
-                      "templateHash": "3373990408263692922"
+                      "templateHash": "15926519715704724668"
                     }
                   },
                   "parameters": {
@@ -1185,74 +1021,6 @@
                           "id": "[parameters('subnetId')]"
                         }
                       }
-                    },
-                    {
-                      "type": "Microsoft.Network/privateDnsZones",
-                      "apiVersion": "2020-01-01",
-                      "name": "[variables('privateDnsZoneName')[toLower(environment().name)]]",
-                      "location": "global"
-                    },
-                    {
-                      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-                      "apiVersion": "2020-01-01",
-                      "name": "[format('{0}/{1}', variables('privateDnsZoneName')[toLower(environment().name)], uniqueString(parameters('workspaceArmId')))]",
-                      "location": "global",
-                      "properties": {
-                        "registrationEnabled": false,
-                        "virtualNetwork": {
-                          "id": "[parameters('virtualNetworkId')]"
-                        }
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName')[toLower(environment().name)])]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Network/privateDnsZones",
-                      "apiVersion": "2020-01-01",
-                      "name": "[variables('privateAznbDnsZoneName')[toLower(environment().name)]]",
-                      "location": "global"
-                    },
-                    {
-                      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-                      "apiVersion": "2020-01-01",
-                      "name": "[format('{0}/{1}', variables('privateAznbDnsZoneName')[toLower(environment().name)], uniqueString(parameters('workspaceArmId')))]",
-                      "location": "global",
-                      "properties": {
-                        "registrationEnabled": false,
-                        "virtualNetwork": {
-                          "id": "[parameters('virtualNetworkId')]"
-                        }
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateAznbDnsZoneName')[toLower(environment().name)])]"
-                      ]
-                    },
-                    {
-                      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-                      "apiVersion": "2020-06-01",
-                      "name": "[format('{0}/amlworkspace-PrivateDnsZoneGroup', parameters('machineLearningPleName'))]",
-                      "properties": {
-                        "privateDnsZoneConfigs": [
-                          {
-                            "name": "[variables('privateDnsZoneName')[environment().name]]",
-                            "properties": {
-                              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName')[toLower(environment().name)])]"
-                            }
-                          },
-                          {
-                            "name": "[variables('privateAznbDnsZoneName')[environment().name]]",
-                            "properties": {
-                              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateAznbDnsZoneName')[toLower(environment().name)])]"
-                            }
-                          }
-                        ]
-                      },
-                      "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZoneName')[toLower(environment().name)])]",
-                        "[resourceId('Microsoft.Network/privateEndpoints', parameters('machineLearningPleName'))]",
-                        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateAznbDnsZoneName')[toLower(environment().name)])]"
-                      ]
                     }
                   ]
                 }
@@ -1591,15 +1359,5 @@
         "[resourceId('Microsoft.Resources/deployments', format('st{0}{1}-deployment', variables('name'), variables('uniqueSuffix')))]"
       ]
     }
-  ],
-  "outputs": {
-    "id": {
-      "type": "string",
-      "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-    },
-    "name": {
-      "type": "string",
-      "value": "[parameters('vnetName')]"
-    }
-  }
+  ]
 }
