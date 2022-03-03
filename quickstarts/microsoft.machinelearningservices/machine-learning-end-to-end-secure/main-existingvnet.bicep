@@ -12,7 +12,13 @@ param location string = resourceGroup().location
 @description('Set of tags to apply to all resources.')
 param tags object = {}
 
-/*
+@description('New or existing virtual network?')
+@allowed([
+  'new'
+  'existing'
+])
+param vnetNewOrExisting string = 'new'
+
 ## New Vnet Params
 @description('Virtual network address prefix')
 param vnetAddressPrefix string = '192.168.0.0/16'
@@ -25,7 +31,6 @@ param scoringSubnetPrefix string = '192.168.1.0/24'
 
 @description('Bastion subnet address prefix')
 param azureBastionSubnetPrefix string = '192.168.250.0/27'
-*/
 
 @description('Existing Virtual network name')
 param vnetName string
@@ -62,9 +67,9 @@ var name = toLower('${prefix}')
 // Create a short, unique suffix, that will be unique to each resource group
 var uniqueSuffix = substring(uniqueString(resourceGroup().id), 0, 4)
 
-/*
+
 // Virtual network and network security group
-module nsg 'modules/nsg.bicep' = { 
+module nsg 'modules/nsg.bicep' = if (vnetNewOrExisting == 'new') { 
   name: 'nsg-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -74,7 +79,7 @@ module nsg 'modules/nsg.bicep' = {
 }
 
 
-module vnet 'modules/vnet.bicep' = { 
+module vnet 'modules/vnet.bicep' = if (vnetNewOrExisting == 'new') { 
   name: 'vnet-${name}-${uniqueSuffix}-deployment'
   params: {
     location: location
@@ -86,16 +91,12 @@ module vnet 'modules/vnet.bicep' = {
     tags: tags
   }
 }
-*/
 
 // Creating symbolic name for an existing virtual network
-resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = {
+resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = if (vnetNewOrExisting == 'existing') {
   name: vnetName
   scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
-
-output id string = vnetexisting.id
-output name string = vnetexisting.name
 
 // Dependent resources for the Azure Machine Learning workspace
 module keyvault 'modules/keyvault.bicep' = {
@@ -180,7 +181,7 @@ module azuremlWorkspace 'modules/machinelearning.bicep' = {
     storage
   ]
 }
-/*
+
 // Optional VM and Bastion jumphost to help access the network isolated environment
 module dsvm 'modules/dsvmjumpbox.bicep' = if (deployJumphost) {
   name: 'vm-${name}-${uniqueSuffix}-deployment'
@@ -206,4 +207,3 @@ module bastion 'modules/bastion.bicep' = if (deployJumphost) {
     vnetexisting
   ]
 }
-*/
