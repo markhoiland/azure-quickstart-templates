@@ -1,26 +1,33 @@
-param artifactsLocation string = deployment().properties.templateLink.uri
+// param artifactsLocation string = deployment().properties.templateLink.uri
 
-@secure()
-param artifactsLocationSASToken string = ''
+// @secure()
+// param artifactsLocationSASToken string = ''
 
 @description('Location for your deployment.')
 param location string = resourceGroup().location
 
-@description('This is a Three Letter Acronym for your company name. \'CON\' for Contoso for example.')
-param companyTla string
+@description('Set of tags to apply to all resources.')
+param tags object = {}
 
+@description('This is a Three Letter Acronym for your company name. \'CON\' for Contoso for example.')
+param namePrefix string
+
+@description('Allow connections to the workspace from all IP addresses (True or False)?')
 @allowed([
   'true'
   'false'
 ])
 param allowAllConnections string = 'true'
 
+@description('Create managed private endpoint to this storage account or not.')
+param dlsManagedPep bool = false
+
 @description('\'True\' deploys an Apache Spark pool as well as a SQL pool. \'False\' does not deploy an Apache Spark pool.')
 @allowed([
   'true'
   'false'
 ])
-param sparkDeployment string = 'true'
+param sparkDeployment string = 'false'
 
 @description('This parameter will determine the node size if SparkDeployment is true')
 @allowed([
@@ -28,7 +35,7 @@ param sparkDeployment string = 'true'
   'Medium'
   'Large'
 ])
-param sparkNodeSize string = 'Medium'
+param sparkNodeSize string = 'Small'
 
 @description('Specify deployment type: DevTest, POC, Prod, Shared. This will also be used in the naming convention.')
 @allowed([
@@ -45,6 +52,13 @@ param sqlAdministratorLogin string
 @description('The password for the SQL Administrator')
 @secure()
 param sqlAdministratorLoginPassword string
+
+@description('\'True\' deploys a dedicated SQL pool. \'False\' does not deploy a dedicated SQL pool.')
+@allowed([
+  'true'
+  'false'
+])
+param sqlDeployment string = 'false'
 
 @description('Select the SKU of the SQL pool.')
 @allowed([
@@ -64,179 +78,33 @@ param sku string = 'DW100c'
 @description('Choose whether you want to synchronise metadata.')
 param metadataSync bool = false
 
-@description('Choose whether to run schedule every day of the week, or only on weekdays')
-@allowed([
-  'Daily'
-  'Weekdays'
-])
-param Frequency string = 'Weekdays'
+@description('Existing Virtual network name for Synapse private endpoint.')
+param vnetName string
 
-@description('Timezone for the schedule. Consult https://msdn.microsoft.com/en-us/library/ms912391(v=winembedded.11).aspx for more information')
-@allowed([
-  'Dateline Standard Time'
-  'Samoa Standard Time'
-  'Hawaiian Standard Time'
-  'Alaskan Standard Time'
-  'Pacific Standard Time'
-  'Mountain Standard Time'
-  'Mexico Standard Time 2'
-  'Central Standard Time'
-  'Canada Central Standard Time'
-  'Mexico Standard Time'
-  'Central America Standard Time'
-  'Eastern Standard Time'
-  'Atlantic Standard Time'
-  'Newfoundland and Labrador Standard Time'
-  'E. South America Standard Time'
-  'S.A. Eastern Standard Time'
-  'Greenland Standard Time'
-  'Mid-Atlantic Standard Time'
-  'Azores Standard Time'
-  'Cape Verde Standard Time'
-  'GMT Standard Time'
-  'Greenwich Standard Time'
-  'Central Europe Standard Time'
-  'Central European Standard Time'
-  'Romance Standard Time'
-  'W. Europe Standard Time'
-  'W. Central Africa Standard Time'
-  'E. Europe Standard Time'
-  'Egypt Standard Time'
-  'FLE Standard Time'
-  'GTB Standard Time'
-  'Israel Standard Time'
-  'South Africa Standard Time'
-  'Russian Standard Time'
-  'Arab Standard Time'
-  'E. Africa Standard Time'
-  'Arabic Standard Time'
-  'Iran Standard Time'
-  'Arabian Standard Time'
-  'Caucasus Standard Time'
-  'Transitional Islamic State of Afghanistan Standard Time'
-  'Ekaterinburg Standard Time'
-  'West Asia Standard Time'
-  'India Standard Time'
-  'Nepal Standard Time'
-  'Central Asia Standard Time'
-  'Sri Lanka Standard Time'
-  'Myanmar Standard Time'
-  'North Asia Standard Time'
-  'China Standard Time'
-  'Singapore Standard Time'
-  'Taipei Standard Time'
-  'North Asia East Standard Time'
-  'Korea Standard Time'
-  'Tokyo Standard Time'
-  'Yakutsk Standard Time'
-  'Tasmania Standard Time'
-  'Vladivostok Standard Time'
-  'West Pacific Standard Time'
-  'Central Pacific Standard Time'
-  'Fiji Islands Standard Time'
-  'New Zealand Standard Time'
-  'Tonga Standard Time'
-])
-param TIME_ZONE string = 'Eastern Standard Time'
+@description('Existing Virtual Network Resource Group for Synapse private endpoint.')
+param vnetResourceGroupName string
 
-@description('Time of Day when the data warehouse will be resumed')
-@allowed([
-  '12:00 AM (  0:00 )'
-  '01:00 AM (  1:00 )'
-  '02:00 AM (  2:00 )'
-  '03:00 AM (  3:00 )'
-  '04:00 AM (  4:00 )'
-  '05:00 AM (  5:00 )'
-  '06:00 AM (  6:00 )'
-  '07:00 AM (  7:00 )'
-  '08:00 AM (  8:00 )'
-  '09:00 AM (  9:00 )'
-  '10:00 AM ( 10:00 )'
-  '11:00 AM ( 11:00 )'
-  '12:00 PM ( 12:00 )'
-  '01:00 PM ( 13:00 )'
-  '02:00 PM ( 14:00 )'
-  '03:00 PM ( 15:00 )'
-  '04:00 PM ( 16:00 )'
-  '05:00 PM ( 17:00 )'
-  '06:00 PM ( 18:00 )'
-  '07:00 PM ( 19:00 )'
-  '08:00 PM ( 20:00 )'
-  '09:00 PM ( 21:00 )'
-  '10:00 PM ( 22:00 )'
-  '11:00 PM ( 23:00 )'
-])
-param ResumeTime string = '09:00 PM ( 21:00 )'
+@description('Existing Virtual Network Subscription ID for Synapse private endpoint.')
+param vnetSubscriptionId string
 
-@description('Time of day when the data warehouse will be paused')
-@allowed([
-  '12:00 AM (  0:00 )'
-  '01:00 AM (  1:00 )'
-  '02:00 AM (  2:00 )'
-  '03:00 AM (  3:00 )'
-  '04:00 AM (  4:00 )'
-  '05:00 AM (  5:00 )'
-  '06:00 AM (  6:00 )'
-  '07:00 AM (  7:00 )'
-  '08:00 AM (  8:00 )'
-  '09:00 AM (  9:00 )'
-  '10:00 AM ( 10:00 )'
-  '11:00 AM ( 11:00 )'
-  '12:00 PM ( 12:00 )'
-  '01:00 PM ( 13:00 )'
-  '02:00 PM ( 14:00 )'
-  '03:00 PM ( 15:00 )'
-  '04:00 PM ( 16:00 )'
-  '05:00 PM ( 17:00 )'
-  '06:00 PM ( 18:00 )'
-  '07:00 PM ( 19:00 )'
-  '08:00 PM ( 20:00 )'
-  '09:00 PM ( 21:00 )'
-  '10:00 PM ( 22:00 )'
-  '11:00 PM ( 23:00 )'
-])
-param PauseTime string = '05:00 PM ( 17:00 )'
+@description('Existing Subnet name for Synapse private endpoint.')
+param subnetName string
 
-var synapseName = toLower(concat(companyTla, deploymentType))
-var dlsName_var = toLower('dls${companyTla}${deploymentType}')
+// Variable inputs
+var synapseName = toLower('${namePrefix}${deploymentType}')
+var dlsName_var = toLower('adls${namePrefix}${deploymentType}')
 var dlsFsName = toLower('${dlsName_var}fs1')
 var sqlPoolName = toLower('${workspaceName_var}p1')
 var workspaceName_var = toLower('${synapseName}ws1')
+var resourceGroupName_var = resourceGroup().name
+var synapseMRGName_var = toLower('${resourceGroupName_var}-${workspaceName_var}')
 var sparkPoolName = toLower('synasp1')
-var logicApps = [
-  'SynapsePauseSchedule'
-  'SynapseResumeSchedule'
-]
 
-module logicAppPauseDeployment '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('nestedtemplates/pausetemplate.json', parameters('_artifactsLocationSASToken')))]*/ = {
-  name: 'logicAppPauseDeployment'
-  params: {
-    logicAppName: logicApps[0]
-    Frequency: Frequency
-    companyTla: companyTla
-    deploymentType: deploymentType
-    TIME_ZONE: TIME_ZONE
-    PauseTime: PauseTime
-    location: location
-  }
-}
-
-module logicAppResumeDeployment '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('nestedtemplates/resumetemplate.json', parameters('_artifactsLocationSASToken')))]*/ = {
-  name: 'logicAppResumeDeployment'
-  params: {
-    logicAppName: logicApps[1]
-    Frequency: Frequency
-    companyTla: companyTla
-    deploymentType: deploymentType
-    TIME_ZONE: TIME_ZONE
-    ResumeTime: ResumeTime
-    location: location
-  }
-}
 
 resource dlsName 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   name: dlsName_var
   location: location
+  tags: tags
   sku: {
     name: 'Standard_LRS'
   }
@@ -254,27 +122,41 @@ resource dlsName_default_dlsFsName 'Microsoft.Storage/storageAccounts/blobServic
     publicAccess: 'None'
   }
   dependsOn: [
-    dlsName_var
+    dlsName
   ]
 }
 
 resource workspaceName 'Microsoft.Synapse/workspaces@2019-06-01-preview' = {
   name: workspaceName_var
   location: location
+  tags: tags
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
     defaultDataLakeStorage: {
       accountUrl: reference(dlsName_var).primaryEndpoints.dfs
+      createManagedPrivateEndpoint: dlsManagedPep
       filesystem: dlsFsName
     }
+    managedResourceGroupName: synapseMRGName_var
     sqlAdministratorLogin: sqlAdministratorLogin
     sqlAdministratorLoginPassword: sqlAdministratorLoginPassword
     managedVirtualNetwork: 'default'
+    privateEndpointConnections: [
+      {
+        properties: {
+          privateEndpoint: {}
+          privateLinkServiceConnectionState: {
+            description: '${workspaceName_var}-pep'
+            status: 'Approved'
+          }
+        }
+      }
+    ]
   }
   dependsOn: [
-    dlsName_var
+    dlsName
     dlsName_default_dlsFsName
   ]
 }
@@ -310,10 +192,11 @@ resource workspaceName_default 'Microsoft.Synapse/workspaces/managedIdentitySqlC
   }
 }
 
-resource workspaceName_sqlPoolName 'Microsoft.Synapse/workspaces/sqlPools@2019-06-01-preview' = {
+resource workspaceName_sqlPoolName 'Microsoft.Synapse/workspaces/sqlPools@2019-06-01-preview' = if (sqlDeployment == 'true') {
   parent: workspaceName
-  name: '${sqlPoolName}'
+  name: sqlPoolName
   location: location
+  tags: tags
   sku: {
     name: sku
   }
@@ -326,7 +209,6 @@ resource workspaceName_sqlPoolName 'Microsoft.Synapse/workspaces/sqlPools@2019-0
 resource workspaceName_sqlPoolName_config 'Microsoft.Synapse/workspaces/sqlPools/metadataSync@2019-06-01-preview' = if (metadataSync) {
   parent: workspaceName_sqlPoolName
   name: 'config'
-  location: location
   properties: {
     enabled: metadataSync
   }
@@ -334,8 +216,9 @@ resource workspaceName_sqlPoolName_config 'Microsoft.Synapse/workspaces/sqlPools
 
 resource workspaceName_sparkPoolName 'Microsoft.Synapse/workspaces/bigDataPools@2019-06-01-preview' = if (sparkDeployment == 'true') {
   parent: workspaceName
-  name: '${sparkPoolName}'
+  name: sparkPoolName
   location: location
+  tags: tags
   properties: {
     nodeCount: 5
     nodeSizeFamily: 'MemoryOptimized'
@@ -356,7 +239,6 @@ resource workspaceName_sparkPoolName 'Microsoft.Synapse/workspaces/bigDataPools@
 resource Microsoft_Authorization_roleAssignments_dlsName 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: dlsName
   name: guid(uniqueString(dlsName_var))
-  location: location
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
     principalId: reference(workspaceName.id, '2019-06-01-preview', 'Full').identity.principalId
@@ -364,24 +246,55 @@ resource Microsoft_Authorization_roleAssignments_dlsName 'Microsoft.Authorizatio
   }
 }
 
-module MSIRBACOnResourceGroup0 '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('nestedtemplates/logicapproleassignments.json', parameters('_artifactsLocationSASToken')))]*/ = {
-  name: 'MSIRBACOnResourceGroup0'
-  params: {
-    logicAppName: logicApps[0]
-  }
-  dependsOn: [
-    logicAppResumeDeployment
-    logicAppPauseDeployment
-  ]
+// Creating symbolic name for an existing virtual network
+resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = {
+  name: vnetName
+  scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
-module MSIRBACOnResourceGroup1 '?' /*TODO: replace with correct path to [uri(parameters('_artifactsLocation'), concat('nestedtemplates/logicapproleassignments.json', parameters('_artifactsLocationSASToken')))]*/ = {
-  name: 'MSIRBACOnResourceGroup1'
-  params: {
-    logicAppName: logicApps[1]
+resource synwspep 'Microsoft.Network/privateEndpoints@2021-05-01' = {
+  name: 'pep-${workspaceName_var}'
+  location: location
+  tags: tags
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: 'pep-${workspaceName_var}'
+        properties: {
+          privateLinkServiceId: workspaceName.id
+          groupIds: [
+            'SqlOnDemand'
+          ]
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+          }
+        }
+      }
+    ]
+    manualPrivateLinkServiceConnections: []
+    subnet: {
+      id: '${vnetexisting.id}/subnets/${subnetName}'
+    }
+    customDnsConfigs: []
   }
-  dependsOn: [
-    logicAppResumeDeployment
-    logicAppPauseDeployment
-  ]
+}
+
+resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
+  name: 'privatelink.sql.azuresynapse.net'
+  location: 'global'
+}
+
+resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-11-01' = {
+  parent: synwspep
+  name: 'SqlOnDemand'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-sql-azuresynapse-net'
+        properties: {
+          privateDnsZoneId: sqlPrivateDnsZone.id
+        }
+      }
+    ]
+  }
 }

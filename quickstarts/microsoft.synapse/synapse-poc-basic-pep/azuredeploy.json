@@ -1,15 +1,14 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.4.1124.51302",
+      "templateHash": "4067071216864006934"
+    }
+  },
   "parameters": {
-    "_artifactsLocation": {
-      "type": "string",
-      "defaultValue": "[deployment().properties.templatelink.uri]"
-    },
-    "_artifactsLocationSASToken": {
-      "type": "securestring",
-      "defaultValue": ""
-    },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
@@ -17,7 +16,14 @@
         "description": "Location for your deployment."
       }
     },
-    "companyTla": {
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Set of tags to apply to all resources."
+      }
+    },
+    "namePrefix": {
       "type": "string",
       "metadata": {
         "description": "This is a Three Letter Acronym for your company name. 'CON' for Contoso for example."
@@ -25,15 +31,25 @@
     },
     "allowAllConnections": {
       "type": "string",
+      "defaultValue": "true",
       "allowedValues": [
         "true",
         "false"
       ],
-      "defaultValue": "true"
+      "metadata": {
+        "description": "Allow connections to the workspace from all IP addresses (True or False)?"
+      }
+    },
+    "dlsManagedPep": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Create managed private endpoint to this storage account or not."
+      }
     },
     "sparkDeployment": {
       "type": "string",
-      "defaultValue": "true",
+      "defaultValue": "false",
       "allowedValues": [
         "true",
         "false"
@@ -44,7 +60,7 @@
     },
     "sparkNodeSize": {
       "type": "string",
-      "defaultValue": "Medium",
+      "defaultValue": "Small",
       "allowedValues": [
         "Small",
         "Medium",
@@ -74,9 +90,20 @@
       }
     },
     "sqlAdministratorLoginPassword": {
-      "type": "securestring",
+      "type": "secureString",
       "metadata": {
         "description": "The password for the SQL Administrator"
+      }
+    },
+    "sqlDeployment": {
+      "type": "string",
+      "defaultValue": "false",
+      "allowedValues": [
+        "true",
+        "false"
+      ],
+      "metadata": {
+        "description": "'True' deploys a dedicated SQL pool. 'False' does not deploy a dedicated SQL pool."
       }
     },
     "sku": {
@@ -105,242 +132,48 @@
         "description": "Choose whether you want to synchronise metadata."
       }
     },
-    "Frequency": {
+    "vnetName": {
       "type": "string",
-      "defaultValue": "Weekdays",
-      "allowedValues": [
-        "Daily",
-        "Weekdays"
-      ],
       "metadata": {
-        "description": "Choose whether to run schedule every day of the week, or only on weekdays"
+        "description": "Existing Virtual network name for Synapse private endpoint."
       }
     },
-    "TIME_ZONE": {
+    "vnetResourceGroupName": {
       "type": "string",
-      "defaultValue": "Eastern Standard Time",
-      "allowedValues": [
-        "Dateline Standard Time",
-        "Samoa Standard Time",
-        "Hawaiian Standard Time",
-        "Alaskan Standard Time",
-        "Pacific Standard Time",
-        "Mountain Standard Time",
-        "Mexico Standard Time 2",
-        "Central Standard Time",
-        "Canada Central Standard Time",
-        "Mexico Standard Time",
-        "Central America Standard Time",
-        "Eastern Standard Time",
-        "Atlantic Standard Time",
-        "Newfoundland and Labrador Standard Time",
-        "E. South America Standard Time",
-        "S.A. Eastern Standard Time",
-        "Greenland Standard Time",
-        "Mid-Atlantic Standard Time",
-        "Azores Standard Time",
-        "Cape Verde Standard Time",
-        "GMT Standard Time",
-        "Greenwich Standard Time",
-        "Central Europe Standard Time",
-        "Central European Standard Time",
-        "Romance Standard Time",
-        "W. Europe Standard Time",
-        "W. Central Africa Standard Time",
-        "E. Europe Standard Time",
-        "Egypt Standard Time",
-        "FLE Standard Time",
-        "GTB Standard Time",
-        "Israel Standard Time",
-        "South Africa Standard Time",
-        "Russian Standard Time",
-        "Arab Standard Time",
-        "E. Africa Standard Time",
-        "Arabic Standard Time",
-        "Iran Standard Time",
-        "Arabian Standard Time",
-        "Caucasus Standard Time",
-        "Transitional Islamic State of Afghanistan Standard Time",
-        "Ekaterinburg Standard Time",
-        "West Asia Standard Time",
-        "India Standard Time",
-        "Nepal Standard Time",
-        "Central Asia Standard Time",
-        "Sri Lanka Standard Time",
-        "Myanmar Standard Time",
-        "North Asia Standard Time",
-        "China Standard Time",
-        "Singapore Standard Time",
-        "Taipei Standard Time",
-        "North Asia East Standard Time",
-        "Korea Standard Time",
-        "Tokyo Standard Time",
-        "Yakutsk Standard Time",
-        "Tasmania Standard Time",
-        "Vladivostok Standard Time",
-        "West Pacific Standard Time",
-        "Central Pacific Standard Time",
-        "Fiji Islands Standard Time",
-        "New Zealand Standard Time",
-        "Tonga Standard Time"
-      ],
       "metadata": {
-        "description": "Timezone for the schedule. Consult https://msdn.microsoft.com/en-us/library/ms912391(v=winembedded.11).aspx for more information"
+        "description": "Existing Virtual Network Resource Group for Synapse private endpoint."
       }
     },
-    "ResumeTime": {
+    "vnetSubscriptionId": {
       "type": "string",
-      "defaultValue": "09:00 PM ( 21:00 )",
-      "allowedValues": [
-        "12:00 AM (  0:00 )",
-        "01:00 AM (  1:00 )",
-        "02:00 AM (  2:00 )",
-        "03:00 AM (  3:00 )",
-        "04:00 AM (  4:00 )",
-        "05:00 AM (  5:00 )",
-        "06:00 AM (  6:00 )",
-        "07:00 AM (  7:00 )",
-        "08:00 AM (  8:00 )",
-        "09:00 AM (  9:00 )",
-        "10:00 AM ( 10:00 )",
-        "11:00 AM ( 11:00 )",
-        "12:00 PM ( 12:00 )",
-        "01:00 PM ( 13:00 )",
-        "02:00 PM ( 14:00 )",
-        "03:00 PM ( 15:00 )",
-        "04:00 PM ( 16:00 )",
-        "05:00 PM ( 17:00 )",
-        "06:00 PM ( 18:00 )",
-        "07:00 PM ( 19:00 )",
-        "08:00 PM ( 20:00 )",
-        "09:00 PM ( 21:00 )",
-        "10:00 PM ( 22:00 )",
-        "11:00 PM ( 23:00 )"
-      ],
       "metadata": {
-        "description": "Time of Day when the data warehouse will be resumed"
+        "description": "Existing Virtual Network Subscription ID for Synapse private endpoint."
       }
     },
-    "PauseTime": {
+    "subnetName": {
       "type": "string",
-      "defaultValue": "05:00 PM ( 17:00 )",
-      "allowedValues": [
-        "12:00 AM (  0:00 )",
-        "01:00 AM (  1:00 )",
-        "02:00 AM (  2:00 )",
-        "03:00 AM (  3:00 )",
-        "04:00 AM (  4:00 )",
-        "05:00 AM (  5:00 )",
-        "06:00 AM (  6:00 )",
-        "07:00 AM (  7:00 )",
-        "08:00 AM (  8:00 )",
-        "09:00 AM (  9:00 )",
-        "10:00 AM ( 10:00 )",
-        "11:00 AM ( 11:00 )",
-        "12:00 PM ( 12:00 )",
-        "01:00 PM ( 13:00 )",
-        "02:00 PM ( 14:00 )",
-        "03:00 PM ( 15:00 )",
-        "04:00 PM ( 16:00 )",
-        "05:00 PM ( 17:00 )",
-        "06:00 PM ( 18:00 )",
-        "07:00 PM ( 19:00 )",
-        "08:00 PM ( 20:00 )",
-        "09:00 PM ( 21:00 )",
-        "10:00 PM ( 22:00 )",
-        "11:00 PM ( 23:00 )"
-      ],
       "metadata": {
-        "description": "Time of day when the data warehouse will be paused"
+        "description": "Existing Subnet name for Synapse private endpoint."
       }
     }
   },
   "variables": {
-    "synapseName": "[toLower(concat(parameters('companyTla'),parameters('deploymentType')))]",
-    "dlsName": "[toLower(concat('dls',parameters('companyTla'),parameters('deploymentType')))]",
-    "dlsFsName": "[toLower(concat(variables('dlsName'),'fs1'))]",
-    "sqlPoolName": "[toLower(concat(variables('workspaceName'),'p1'))]",
-    "workspaceName": "[toLower(concat(variables('synapseName'),'ws1'))]",
-    "sparkPoolName": "[toLower('synasp1')]",
-    "logicApps": [
-      "SynapsePauseSchedule",
-      "SynapseResumeSchedule"
-    ]
+    "synapseName": "[toLower(format('{0}{1}', parameters('namePrefix'), parameters('deploymentType')))]",
+    "dlsName_var": "[toLower(format('adls{0}{1}', parameters('namePrefix'), parameters('deploymentType')))]",
+    "dlsFsName": "[toLower(format('{0}fs1', variables('dlsName_var')))]",
+    "sqlPoolName": "[toLower(format('{0}p1', variables('workspaceName_var')))]",
+    "workspaceName_var": "[toLower(format('{0}ws1', variables('synapseName')))]",
+    "resourceGroupName_var": "[resourceGroup().name]",
+    "synapseMRGName_var": "[toLower(format('{0}-{1}', variables('resourceGroupName_var'), variables('workspaceName_var')))]",
+    "sparkPoolName": "[toLower('synasp1')]"
   },
   "resources": [
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-06-01",
-      "name": "logicAppPauseDeployment",
-      "properties": {
-        "mode": "Incremental",
-        "templatelink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/pausetemplate.json', parameters('_artifactsLocationSASToken')))]"
-        },
-        "parameters": {
-          "logicAppName": {
-            "value": "[variables('logicApps')[0]]"
-          },
-          "Frequency": {
-            "value": "[parameters('Frequency')]"
-          },
-          "companyTla": {
-            "value": "[parameters('companyTla')]"
-          },
-          "deploymentType": {
-            "value": "[parameters('deploymentType')]"
-          },
-          "TIME_ZONE": {
-            "value": "[parameters('TIME_ZONE')]"
-          },
-          "PauseTime": {
-            "value": "[parameters('PauseTime')]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
-          }
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-06-01",
-      "name": "logicAppResumeDeployment",
-      "properties": {
-        "mode": "Incremental",
-        "templatelink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/resumetemplate.json', parameters('_artifactsLocationSASToken')))]"
-        },
-        "parameters": {
-          "logicAppName": {
-            "value": "[variables('logicApps')[1]]"
-          },
-          "Frequency": {
-            "value": "[parameters('Frequency')]"
-          },
-          "companyTla": {
-            "value": "[parameters('companyTla')]"
-          },
-          "deploymentType": {
-            "value": "[parameters('deploymentType')]"
-          },
-          "TIME_ZONE": {
-            "value": "[parameters('TIME_ZONE')]"
-          },
-          "ResumeTime": {
-            "value": "[parameters('ResumeTime')]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
-          }
-        }
-      }
-    },
-    {
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
-      "name": "[variables('dlsName')]",
+      "name": "[variables('dlsName_var')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "sku": {
         "name": "Standard_LRS"
       },
@@ -349,120 +182,134 @@
         "accessTier": "Hot",
         "supportsHttpsTrafficOnly": true,
         "isHnsEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2019-06-01",
+      "name": "[format('{0}/default/{1}', variables('dlsName_var'), variables('dlsFsName'))]",
+      "properties": {
+        "publicAccess": "None"
       },
-      "resources": [
-        {
-          "name": "[concat('default/', variables('dlsFsName'))]",
-          "type": "blobServices/containers",
-          "apiVersion": "2019-06-01",
-          "dependsOn": [
-            "[variables('dlsName')]"
-          ],
-          "properties": {
-            "publicAccess": "None"
-          }
-        }
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName_var'))]"
       ]
     },
     {
       "type": "Microsoft.Synapse/workspaces",
       "apiVersion": "2019-06-01-preview",
-      "name": "[variables('workspaceName')]",
+      "name": "[variables('workspaceName_var')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "identity": {
         "type": "SystemAssigned"
       },
-      "dependsOn": [
-        "[variables('dlsName')]",
-        "[variables('dlsFsName')]"
-      ],
       "properties": {
         "defaultDataLakeStorage": {
-          "accountUrl": "[reference(variables('dlsName')).primaryEndpoints.dfs]",
+          "accountUrl": "[reference(variables('dlsName_var')).primaryEndpoints.dfs]",
+          "createManagedPrivateEndpoint": "[parameters('dlsManagedPep')]",
           "filesystem": "[variables('dlsFsName')]"
         },
+        "managedResourceGroupName": "[variables('synapseMRGName_var')]",
         "sqlAdministratorLogin": "[parameters('sqlAdministratorLogin')]",
         "sqlAdministratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
-        "managedVirtualNetwork": "default"
-      },
-      "resources": [
-        {
-          "condition": "[equals(parameters('allowAllConnections'),'true')]",
-          "type": "firewallrules",
-          "apiVersion": "2019-06-01-preview",
-          "name": "allowAll",
-          "location": "[parameters('location')]",
-          "dependsOn": [ "[variables('workspaceName')]" ],
-          "properties": {
-            "startIpAddress": "0.0.0.0",
-            "endIpAddress": "255.255.255.255"
-          }
-        },
-        {
-          "type": "firewallrules",
-          "apiVersion": "2019-06-01-preview",
-          "name": "AllowAllWindowsAzureIps",
-          "location": "[parameters('location')]",
-          "dependsOn": [ "[variables('workspaceName')]" ],
-          "properties": {
-            "startIpAddress": "0.0.0.0",
-            "endIpAddress": "0.0.0.0"
-          }
-        },
-        {
-          "type": "managedIdentitySqlControlSettings",
-          "apiVersion": "2019-06-01-preview",
-          "name": "default",
-          "location": "[parameters('location')]",
-          "dependsOn": [ "[variables('workspaceName')]" ],
-          "properties": {
-            "grantSqlControlToManagedIdentity": {
-              "desiredState": "Enabled"
+        "managedVirtualNetwork": "default",
+        "privateEndpointConnections": [
+          {
+            "properties": {
+              "privateEndpoint": {},
+              "privateLinkServiceConnectionState": {
+                "description": "[format('{0}-pep', variables('workspaceName_var'))]",
+                "status": "Approved"
+              }
             }
           }
-        }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName_var'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/default/{1}', variables('dlsName_var'), variables('dlsFsName')), '/')[0], split(format('{0}/default/{1}', variables('dlsName_var'), variables('dlsFsName')), '/')[1], split(format('{0}/default/{1}', variables('dlsName_var'), variables('dlsFsName')), '/')[2])]"
       ]
     },
     {
+      "condition": "[equals(parameters('allowAllConnections'), 'true')]",
+      "type": "Microsoft.Synapse/workspaces/firewallRules",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[format('{0}/{1}', variables('workspaceName_var'), 'allowAll')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "255.255.255.255"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/firewallRules",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[format('{0}/{1}', variables('workspaceName_var'), 'AllowAllWindowsAzureIps')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/managedIdentitySqlControlSettings",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[format('{0}/{1}', variables('workspaceName_var'), 'default')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "grantSqlControlToManagedIdentity": {
+          "desiredState": "Enabled"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
+    },
+    {
+      "condition": "[equals(parameters('sqlDeployment'), 'true')]",
       "type": "Microsoft.Synapse/workspaces/sqlPools",
       "apiVersion": "2019-06-01-preview",
-      "name": "[concat(variables('workspaceName'), '/', variables('sqlPoolName'))]",
+      "name": "[format('{0}/{1}', variables('workspaceName_var'), variables('sqlPoolName'))]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "sku": {
         "name": "[parameters('sku')]"
       },
-      "dependsOn": [
-        "[variables('workspaceName')]"
-      ],
       "properties": {
         "createMode": "Default",
         "collation": "SQL_Latin1_General_CP1_CI_AS"
       },
-      "resources": [
-        {
-          "condition": "[parameters('metadataSync')]",
-          "type": "metadataSync",
-          "apiVersion": "2019-06-01-preview",
-          "name": "config",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[variables('sqlPoolName')]"
-          ],
-          "properties": {
-            "Enabled": "[parameters('metadataSync')]"
-          }
-        }
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
       ]
     },
     {
-      "condition": "[equals(parameters('sparkDeployment'),'true')]",
+      "condition": "[parameters('metadataSync')]",
+      "type": "Microsoft.Synapse/workspaces/sqlPools/metadataSync",
+      "apiVersion": "2019-06-01-preview",
+      "name": "[format('{0}/{1}/{2}', variables('workspaceName_var'), variables('sqlPoolName'), 'config')]",
+      "properties": {
+        "enabled": "[parameters('metadataSync')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]",
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', variables('workspaceName_var'), variables('sqlPoolName'))]"
+      ]
+    },
+    {
+      "condition": "[equals(parameters('sparkDeployment'), 'true')]",
       "type": "Microsoft.Synapse/workspaces/bigDataPools",
       "apiVersion": "2019-06-01-preview",
-      "name": "[concat(variables('workspaceName'), '/', variables('sparkPoolName'))]",
+      "name": "[format('{0}/{1}', variables('workspaceName_var'), variables('sparkPoolName'))]",
       "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('workspaceName')]"
-      ],
+      "tags": "[parameters('tags')]",
       "properties": {
         "nodeCount": 5,
         "nodeSizeFamily": "MemoryOptimized",
@@ -477,62 +324,81 @@
           "delayInMinutes": 15
         },
         "sparkVersion": "2.4"
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
     },
     {
-      "scope": "[concat('Microsoft.Storage/storageAccounts/', variables('dlsName'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
-      "name": "[guid(uniqueString(variables('dlsName')))]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('workspaceName')]"
-      ],
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', variables('dlsName_var'))]",
+      "name": "[guid(uniqueString(variables('dlsName_var')))]",
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "principalId": "[reference(resourceId('Microsoft.Synapse/workspaces', variables('workspaceName')), '2019-06-01-preview', 'Full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var')), '2019-06-01-preview', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dlsName_var'))]",
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
     },
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-06-01",
-      "name": "MSIRBACOnResourceGroup0",
-      "dependsOn": [
-        "logicAppResumeDeployment",
-        "logicAppPauseDeployment"
-      ],
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2021-05-01",
+      "name": "[format('pep-{0}', variables('workspaceName_var'))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
       "properties": {
-        "mode": "Incremental",
-        "templatelink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/logicapproleassignments.json', parameters('_artifactsLocationSASToken')))]"
-        },
-        "parameters": {
-          "logicAppName": {
-            "value": "[variables('logicApps')[0]]"
+        "privateLinkServiceConnections": [
+          {
+            "name": "[format('pep-{0}', variables('workspaceName_var'))]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]",
+              "groupIds": [
+                "SqlOnDemand"
+              ],
+              "privateLinkServiceConnectionState": {
+                "status": "Approved"
+              }
+            }
           }
-        }
-      }
+        ],
+        "manualPrivateLinkServiceConnections": [],
+        "subnet": {
+          "id": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('subnetName'))]"
+        },
+        "customDnsConfigs": []
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', variables('workspaceName_var'))]"
+      ]
     },
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-06-01",
-      "name": "MSIRBACOnResourceGroup1",
-      "dependsOn": [
-        "logicAppResumeDeployment",
-        "logicAppPauseDeployment"
-      ],
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-01-01",
+      "name": "privatelink.sql.azuresynapse.net",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2020-11-01",
+      "name": "[format('{0}/{1}', format('pep-{0}', variables('workspaceName_var')), 'SqlOnDemand')]",
       "properties": {
-        "mode": "Incremental",
-        "templatelink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/logicapproleassignments.json', parameters('_artifactsLocationSASToken')))]"
-        },
-        "parameters": {
-          "logicAppName": {
-            "value": "[variables('logicApps')[1]]"
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-sql-azuresynapse-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.sql.azuresynapse.net')]"
+            }
           }
-        }
-      }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.sql.azuresynapse.net')]",
+        "[resourceId('Microsoft.Network/privateEndpoints', format('pep-{0}', variables('workspaceName_var')))]"
+      ]
     }
   ]
 }

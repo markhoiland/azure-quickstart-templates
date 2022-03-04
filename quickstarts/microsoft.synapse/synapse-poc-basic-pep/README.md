@@ -9,7 +9,7 @@
 ![Best Practice Check](https://azurequickstartsservice.blob.core.windows.net/badges/quickstarts/microsoft.synapse/synapse-poc/BestPracticeResult.svg)
 ![Cred Scan Check](https://azurequickstartsservice.blob.core.windows.net/badges/quickstarts/microsoft.synapse/synapse-poc/CredScanResult.svg)
 
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.synapse%2Fsynapse-poc%2Fazuredeploy.json) [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.synapse%2Fsynapse-poc%2Fazuredeploy.json)
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmarkhoiland%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.synapse%2Fsynapse-poc%2Fazuredeploy.json) [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkhoiland%2Fazure-quickstart-templates%2Fmaster%2Fquickstarts%2Fmicrosoft.synapse%2Fsynapse-poc%2Fazuredeploy.json)
 
 ![Synapse Analytics](images/synapse1.png)
 
@@ -21,7 +21,9 @@ This template deploys the following:
   - (OPTIONAL) Allows All connections in by default (Firewall IP Addresses)
   - Allows Azure Services to access the workspace by default
   - Managed Virtual Network is Enabled
-- An Azure Synapse SQL Pool
+  - Private Endpoint for SQLonDemand
+  - Private DNS Zone
+- (OPTIONAL) An Azure Synapse SQL Pool
 - (OPTIONAL) Apache Spark Pool
   - Auto-paused set to 15 minutes of idling
 - Azure Data Lake Storage Gen2 account
@@ -49,6 +51,7 @@ Using the Getting Started wizard inside of the workspace is recommended to use s
 ## Prerequisites
 
 - Owner to the Azure Subscription being deployed. This is for creation of a separate Proof-of-Concept Resource Group and to delegate roles necessary for this proof of concept
+- Existing Virtual Network for the Private Endpoint
 
 ## Post Deployment
 
