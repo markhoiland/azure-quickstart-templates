@@ -29,10 +29,6 @@ This template deploys the following:
 - Azure Data Lake Storage Gen2 account
   - Azure Synapse Workspace identity given Storage Blob Data Contributor to the Storage Account
     - A new File System inside the Storage Account to be used by Azure Synapse
-- A Logic App to Pause the SQL Pool at defined schedule
-  - The Logic App will check for Active Queries. If there are active queries, it will wait 5 minutes and check again until there are none before pausing
-- A Logic App to Resume the SQL Pool at defined schedule
-- Both Logic App managed identities are given Contributor rights to the Resource Group
 - Grants the Workspace identity CONTROL to all SQL pools and SQL on-demand pool
 
 ## Index
