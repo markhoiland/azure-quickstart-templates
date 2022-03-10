@@ -42,16 +42,28 @@ param trainingSubnetName string
 @description('Scoring subnet name')
 param scoringSubnetName string
 
-@description('Deploy a Bastion jumphost to access the network-isolated environment?')
-param deployJumphost bool = false
+// @description('RBAC role definition ID for the AKS UAMI - Network Contributor')
+// param roleDefinitionResourceId string = '4d97b98b-1d4f-4787-a291-c67834d212e7'
 
-@description('Jumphost virtual machine username')
-param dsvmJumpboxUsername string
+@description('Existing User-assigned managed identity name')
+param uamiName string
 
-@secure()
-@minLength(8)
-@description('Jumphost virtual machine password')
-param dsvmJumpboxPassword string
+@description('Existing User-assigned managed identity Resource Group')
+param uamiResourceGroupName string
+
+@description('Existing User-assigned managed identity Subscription ID')
+param uamiSubscriptionId string
+
+// @description('Deploy a Bastion jumphost to access the network-isolated environment?')
+// param deployJumphost bool = false
+
+// @description('Jumphost virtual machine username')
+// param dsvmJumpboxUsername string
+
+// @secure()
+// @minLength(8)
+// @description('Jumphost virtual machine password')
+// param dsvmJumpboxPassword string
 
 @description('Enable public IP for Azure Machine Learning compute nodes')
 param amlComputePublicIp bool = true
@@ -94,6 +106,28 @@ resource vnetexisting 'Microsoft.Network/virtualNetworks@2020-07-01' existing = 
   scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
+// Create a User Assigned Managed Identity for the AML cluster and assign it required RBAC role
+// resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+//   name: 'uami-${name}-${uniqueSuffix}'
+//   location: location
+//   tags: tags
+// }
+
+// resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+//   name: guid(resourceGroup().id, uami.id, roleDefinitionResourceId)
+//   properties: {
+//     roleDefinitionId: roleDefinitionResourceId
+//     principalId: uami.properties.principalId
+//     principalType: 'ServicePrincipal'
+//   }
+// }
+
+// Creating symbolic name for an existing user-assigned managed identity
+resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: uamiName
+  scope: resourceGroup(uamiSubscriptionId, uamiResourceGroupName)
+}
+
 // Dependent resources for the Azure Machine Learning workspace
 module keyvault 'modules/keyvault-existingvnet.bicep' = {
   name: 'kv-${name}-${uniqueSuffix}-deployment'
@@ -103,6 +137,8 @@ module keyvault 'modules/keyvault-existingvnet.bicep' = {
     keyvaultPleName: 'ple-${name}-${uniqueSuffix}-kv'
     subnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
     virtualNetworkId: '${vnetexisting.id}'
+    vnetResourceGroupName: vnetResourceGroupName
+    vnetSubscriptionId: vnetSubscriptionId
     tags: tags
   }
 }
@@ -117,6 +153,8 @@ module storage 'modules/storage-existingvnet.bicep' = {
     storageSkuName: 'Standard_LRS'
     subnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
     virtualNetworkId: '${vnetexisting.id}'
+    vnetResourceGroupName: vnetResourceGroupName
+    vnetSubscriptionId: vnetSubscriptionId
     tags: tags
   }
 }
@@ -129,6 +167,8 @@ module containerRegistry 'modules/containerregistry-existingvnet.bicep' = {
     containerRegistryPleName: 'ple-${name}-${uniqueSuffix}-cr'
     subnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
     virtualNetworkId: '${vnetexisting.id}'
+    vnetResourceGroupName: vnetResourceGroupName
+    vnetSubscriptionId: vnetSubscriptionId
     tags: tags
   }
 }
@@ -158,12 +198,15 @@ module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
     containerRegistryId: containerRegistry.outputs.containerRegistryId
     keyVaultId: keyvault.outputs.keyvaultId
     storageAccountId: storage.outputs.storageId
+    userAssignedMiID: uami.id
 
     // networking
     subnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
     computeSubnetId: '${vnetexisting.id}/subnets/${trainingSubnetName}'
     aksSubnetId: '${vnetexisting.id}/subnets/${scoringSubnetName}'
     virtualNetworkId: '${vnetexisting.id}'
+    vnetResourceGroupName: vnetResourceGroupName
+    vnetSubscriptionId: vnetSubscriptionId
     machineLearningPleName: 'ple-${name}-${uniqueSuffix}-mlw'
 
     // compute
@@ -175,6 +218,7 @@ module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
     containerRegistry
     applicationInsights
     storage
+    uami
   ]
 }
 

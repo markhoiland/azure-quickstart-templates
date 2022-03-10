@@ -45,11 +45,20 @@ param aksSubnetId string
 @description('Resource ID of the virtual network')
 param virtualNetworkId string
 
+@description('Existing Virtual Network Resource Group')
+param vnetResourceGroupName string
+
+@description('Existing Virtual Network Subscription ID')
+param vnetSubscriptionId string
+
 @description('Machine learning workspace private link endpoint name')
 param machineLearningPleName string
 
 @description('Enable public IP for Azure Machine Learning compute nodes')
 param amlComputePublicIp bool = true
+
+@description('User Assigned Managed Identity ID for Azure Machine Learning compute nodes')
+param userAssignedMiID string
  
 resource machineLearning 'Microsoft.MachineLearningServices/workspaces@2021-04-01' = {
   name: machineLearningName
@@ -82,13 +91,15 @@ module machineLearningPrivateEndpoint 'machinelearningnetworking-existingvnet.bi
     location: location
     tags: tags
     virtualNetworkId: virtualNetworkId
+    vnetResourceGroupName: vnetResourceGroupName
+    vnetSubscriptionId: vnetSubscriptionId
     workspaceArmId: machineLearning.id
     subnetId: subnetId
     machineLearningPleName: machineLearningPleName
   }
 }
 
-module machineLearningCompute 'machinelearningcompute.bicep' = {
+module machineLearningCompute 'machinelearningcompute-existingvnet.bicep' = {
   name: 'machineLearningComputes'
   scope: resourceGroup()
   params: {
@@ -100,6 +111,7 @@ module machineLearningCompute 'machinelearningcompute.bicep' = {
     prefix: prefix
     tags: tags
     amlComputePublicIp: amlComputePublicIp
+    userAssignedMiID: userAssignedMiID
   }
   dependsOn: [
     machineLearning

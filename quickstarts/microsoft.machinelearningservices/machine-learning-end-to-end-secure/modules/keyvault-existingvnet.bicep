@@ -17,6 +17,12 @@ param subnetId string
 @description('The VNet ID where the Key Vault Private Link is to be created')
 param virtualNetworkId string
 
+@description('Existing Virtual Network Resource Group')
+param vnetResourceGroupName string
+
+@description('Existing Virtual Network Subscription ID')
+param vnetSubscriptionId string
+
 var privateDnsZoneName = 'privatelink${environment().suffixes.keyvaultDns}'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' = {
@@ -66,10 +72,9 @@ resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2020-11-01'
   }
 }
 
-/*
-resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
+resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' existing = {
   name: privateDnsZoneName
-  location: 'global'
+  scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
 resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-06-01' = {
@@ -86,16 +91,15 @@ resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGr
   }
 }
 
-resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
-  name: '${keyVaultPrivateDnsZone.name}/${uniqueString(keyVault.id)}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetworkId
-    }
-  }
-}
-*/
+// resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
+//   name: '${keyVaultPrivateDnsZone.name}/${uniqueString(keyVault.id)}'
+//   location: 'global'
+//   properties: {
+//     registrationEnabled: false
+//     virtualNetwork: {
+//       id: virtualNetworkId
+//     }
+//   }
+// }
 
 output keyvaultId string = keyVault.id

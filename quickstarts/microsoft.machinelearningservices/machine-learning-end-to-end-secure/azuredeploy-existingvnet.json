@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.4.1124.51302",
-      "templateHash": "1385825705907256158"
+      "templateHash": "13336292894767967462"
     }
   },
   "parameters": {
@@ -61,25 +61,23 @@
         "description": "Scoring subnet name"
       }
     },
-    "deployJumphost": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "Deploy a Bastion jumphost to access the network-isolated environment?"
-      }
-    },
-    "dsvmJumpboxUsername": {
+    "uamiName": {
       "type": "string",
       "metadata": {
-        "description": "Jumphost virtual machine username"
+        "description": "Existing User-assigned managed identity name"
       }
     },
-    "dsvmJumpboxPassword": {
-      "type": "secureString",
+    "uamiResourceGroupName": {
+      "type": "string",
       "metadata": {
-        "description": "Jumphost virtual machine password"
-      },
-      "minLength": 8
+        "description": "Existing User-assigned managed identity Resource Group"
+      }
+    },
+    "uamiSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing User-assigned managed identity Subscription ID"
+      }
     },
     "amlComputePublicIp": {
       "type": "bool",
@@ -119,6 +117,12 @@
           "virtualNetworkId": {
             "value": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
           },
+          "vnetResourceGroupName": {
+            "value": "[parameters('vnetResourceGroupName')]"
+          },
+          "vnetSubscriptionId": {
+            "value": "[parameters('vnetSubscriptionId')]"
+          },
           "tags": {
             "value": "[parameters('tags')]"
           }
@@ -130,7 +134,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "15094464157484106588"
+              "templateHash": "8708237364207518697"
             }
           },
           "parameters": {
@@ -170,6 +174,18 @@
               "type": "string",
               "metadata": {
                 "description": "The VNet ID where the Key Vault Private Link is to be created"
+              }
+            },
+            "vnetResourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Resource Group"
+              }
+            },
+            "vnetSubscriptionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Subscription ID"
               }
             }
           },
@@ -228,6 +244,24 @@
               "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvaultName'))]"
               ]
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/vault-PrivateDnsZoneGroup', parameters('keyvaultPleName'))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[variables('privateDnsZoneName')]",
+                    "properties": {
+                      "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('keyvaultPleName'))]"
+              ]
             }
           ],
           "outputs": {
@@ -270,6 +304,12 @@
           "virtualNetworkId": {
             "value": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
           },
+          "vnetResourceGroupName": {
+            "value": "[parameters('vnetResourceGroupName')]"
+          },
+          "vnetSubscriptionId": {
+            "value": "[parameters('vnetSubscriptionId')]"
+          },
           "tags": {
             "value": "[parameters('tags')]"
           }
@@ -281,7 +321,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "7412947141314296568"
+              "templateHash": "14986353602877462723"
             }
           },
           "parameters": {
@@ -325,6 +365,18 @@
               "type": "string",
               "metadata": {
                 "description": "Resource ID of the virtual network"
+              }
+            },
+            "vnetResourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Resource Group"
+              }
+            },
+            "vnetSubscriptionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Subscription ID"
               }
             },
             "storageSkuName": {
@@ -463,6 +515,42 @@
               "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageNameCleaned'))]"
               ]
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/blob-PrivateDnsZoneGroup', parameters('storagePleBlobName'))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[variables('blobPrivateDnsZoneName')]",
+                    "properties": {
+                      "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('blobPrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('storagePleBlobName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/flie-PrivateDnsZoneGroup', parameters('storagePleFileName'))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[variables('filePrivateDnsZoneName')]",
+                    "properties": {
+                      "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('filePrivateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('storagePleFileName'))]"
+              ]
             }
           ],
           "outputs": {
@@ -499,6 +587,12 @@
           "virtualNetworkId": {
             "value": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
           },
+          "vnetResourceGroupName": {
+            "value": "[parameters('vnetResourceGroupName')]"
+          },
+          "vnetSubscriptionId": {
+            "value": "[parameters('vnetSubscriptionId')]"
+          },
           "tags": {
             "value": "[parameters('tags')]"
           }
@@ -510,7 +604,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "6175863546487875967"
+              "templateHash": "12103291321852068668"
             }
           },
           "parameters": {
@@ -548,6 +642,18 @@
               "type": "string",
               "metadata": {
                 "description": "Resource ID of the virtual network"
+              }
+            },
+            "vnetResourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Resource Group"
+              }
+            },
+            "vnetSubscriptionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Subscription ID"
               }
             }
           },
@@ -615,6 +721,24 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries', variables('containerRegistryNameCleaned'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+              "apiVersion": "2020-06-01",
+              "name": "[format('{0}/{1}-PrivateDnsZoneGroup', parameters('containerRegistryPleName'), variables('groupName'))]",
+              "properties": {
+                "privateDnsZoneConfigs": [
+                  {
+                    "name": "[variables('privateDnsZoneName')]",
+                    "properties": {
+                      "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('privateDnsZoneName'))]"
+                    }
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('containerRegistryPleName'))]"
               ]
             }
           ],
@@ -750,6 +874,9 @@
           "storageAccountId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('st{0}{1}-deployment', variables('name'), variables('uniqueSuffix'))), '2020-10-01').outputs.storageId.value]"
           },
+          "userAssignedMiID": {
+            "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('uamiSubscriptionId'), parameters('uamiResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uamiName'))]"
+          },
           "subnetId": {
             "value": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('trainingSubnetName'))]"
           },
@@ -761,6 +888,12 @@
           },
           "virtualNetworkId": {
             "value": "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
+          },
+          "vnetResourceGroupName": {
+            "value": "[parameters('vnetResourceGroupName')]"
+          },
+          "vnetSubscriptionId": {
+            "value": "[parameters('vnetSubscriptionId')]"
           },
           "machineLearningPleName": {
             "value": "[format('ple-{0}-{1}-mlw', variables('name'), variables('uniqueSuffix'))]"
@@ -779,7 +912,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.4.1124.51302",
-              "templateHash": "8645624844107800364"
+              "templateHash": "11716408527534770156"
             }
           },
           "parameters": {
@@ -874,6 +1007,18 @@
                 "description": "Resource ID of the virtual network"
               }
             },
+            "vnetResourceGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Resource Group"
+              }
+            },
+            "vnetSubscriptionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Existing Virtual Network Subscription ID"
+              }
+            },
             "machineLearningPleName": {
               "type": "string",
               "metadata": {
@@ -885,6 +1030,12 @@
               "defaultValue": true,
               "metadata": {
                 "description": "Enable public IP for Azure Machine Learning compute nodes"
+              }
+            },
+            "userAssignedMiID": {
+              "type": "string",
+              "metadata": {
+                "description": "User Assigned Managed Identity ID for Azure Machine Learning compute nodes"
               }
             }
           },
@@ -928,6 +1079,12 @@
                   "virtualNetworkId": {
                     "value": "[parameters('virtualNetworkId')]"
                   },
+                  "vnetResourceGroupName": {
+                    "value": "[parameters('vnetResourceGroupName')]"
+                  },
+                  "vnetSubscriptionId": {
+                    "value": "[parameters('vnetSubscriptionId')]"
+                  },
                   "workspaceArmId": {
                     "value": "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('machineLearningName'))]"
                   },
@@ -945,7 +1102,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.4.1124.51302",
-                      "templateHash": "15926519715704724668"
+                      "templateHash": "3788795612212027222"
                     }
                   },
                   "parameters": {
@@ -965,6 +1122,18 @@
                       "type": "string",
                       "metadata": {
                         "description": "Resource ID of the virtual network resource"
+                      }
+                    },
+                    "vnetResourceGroupName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Existing Virtual Network Resource Group"
+                      }
+                    },
+                    "vnetSubscriptionId": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Existing Virtual Network Subscription ID"
                       }
                     },
                     "subnetId": {
@@ -1021,6 +1190,30 @@
                           "id": "[parameters('subnetId')]"
                         }
                       }
+                    },
+                    {
+                      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+                      "apiVersion": "2020-06-01",
+                      "name": "[format('{0}/amlworkspace-PrivateDnsZoneGroup', parameters('machineLearningPleName'))]",
+                      "properties": {
+                        "privateDnsZoneConfigs": [
+                          {
+                            "name": "[variables('privateDnsZoneName')[environment().name]]",
+                            "properties": {
+                              "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('privateDnsZoneName')[toLower(environment().name)])]"
+                            }
+                          },
+                          {
+                            "name": "[variables('privateAznbDnsZoneName')[environment().name]]",
+                            "properties": {
+                              "privateDnsZoneId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/privateDnsZones', variables('privateAznbDnsZoneName')[toLower(environment().name)])]"
+                            }
+                          }
+                        ]
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateEndpoints', parameters('machineLearningPleName'))]"
+                      ]
                     }
                   ]
                 }
@@ -1062,6 +1255,9 @@
                   },
                   "amlComputePublicIp": {
                     "value": "[parameters('amlComputePublicIp')]"
+                  },
+                  "userAssignedMiID": {
+                    "value": "[parameters('userAssignedMiID')]"
                   }
                 },
                 "template": {
@@ -1071,7 +1267,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.4.1124.51302",
-                      "templateHash": "7004272169421734645"
+                      "templateHash": "15486569377557188081"
                     }
                   },
                   "parameters": {
@@ -1128,6 +1324,12 @@
                       "defaultValue": "Standard_Ds3_v2",
                       "metadata": {
                         "description": "VM size for the default compute cluster"
+                      }
+                    },
+                    "userAssignedMiID": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "User Assigned Managed Identity ID for Azure Machine Learning compute nodes"
                       }
                     }
                   },
@@ -1218,6 +1420,9 @@
                           },
                           "workspaceName": {
                             "value": "[parameters('machineLearning')]"
+                          },
+                          "userAssignedMiID": {
+                            "value": "[parameters('userAssignedMiID')]"
                           }
                         },
                         "template": {
@@ -1227,7 +1432,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.4.1124.51302",
-                              "templateHash": "651865594382963709"
+                              "templateHash": "8622269816027123446"
                             }
                           },
                           "parameters": {
@@ -1266,6 +1471,12 @@
                               "metadata": {
                                 "description": "Name of the Azure Machine Learning attached compute"
                               }
+                            },
+                            "userAssignedMiID": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "User Assigned Managed Identity ID for Azure Machine Learning compute nodes"
+                              }
                             }
                           },
                           "resources": [
@@ -1276,7 +1487,10 @@
                               "location": "[parameters('location')]",
                               "tags": "[parameters('tags')]",
                               "identity": {
-                                "type": "SystemAssigned"
+                                "type": "UserAssigned",
+                                "userAssignedIdentities": {
+                                  "[format('{0}', parameters('userAssignedMiID'))]": {}
+                                }
                               },
                               "properties": {
                                 "kubernetesVersion": "1.22.4",

@@ -17,6 +17,12 @@ param subnetId string
 @description('Resource ID of the virtual network')
 param virtualNetworkId string
 
+@description('Existing Virtual Network Resource Group')
+param vnetResourceGroupName string
+
+@description('Existing Virtual Network Subscription ID')
+param vnetSubscriptionId string
+
 var containerRegistryNameCleaned = replace(containerRegistryName, '-', '')
 
 var privateDnsZoneName = 'privatelink${environment().suffixes.acrLoginServer}'
@@ -78,10 +84,9 @@ resource containerRegistryPrivateEndpoint 'Microsoft.Network/privateEndpoints@20
   }
 }
 
-/*
-resource acrPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
+resource acrPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' existing = {
   name: privateDnsZoneName
-  location: 'global'
+  scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
 resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-06-01' = {
@@ -98,16 +103,16 @@ resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGr
   }
 }
 
-resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
-  name: '${acrPrivateDnsZone.name}/${uniqueString(containerRegistry.id)}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetworkId
-    }
-  }
-}
-*/
+// resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
+//   name: '${acrPrivateDnsZone.name}/${uniqueString(containerRegistry.id)}'
+//   location: 'global'
+//   properties: {
+//     registrationEnabled: false
+//     virtualNetwork: {
+//       id: virtualNetworkId
+//     }
+//   }
+// }
+
 output containerRegistryId string = containerRegistry.id
 

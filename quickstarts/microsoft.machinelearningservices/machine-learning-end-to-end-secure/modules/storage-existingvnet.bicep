@@ -20,6 +20,12 @@ param subnetId string
 @description('Resource ID of the virtual network')
 param virtualNetworkId string
 
+@description('Existing Virtual Network Resource Group')
+param vnetResourceGroupName string
+
+@description('Existing Virtual Network Subscription ID')
+param vnetSubscriptionId string
+
 @allowed([
   'Standard_LRS'
   'Standard_ZRS'
@@ -144,10 +150,9 @@ resource storagePrivateEndpointFile 'Microsoft.Network/privateEndpoints@2020-11-
   }
 }
 
-/*
-resource blobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
+resource blobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' existing = {
   name: blobPrivateDnsZoneName
-  location: 'global'
+  scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
 resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-06-01' = {
@@ -164,20 +169,20 @@ resource privateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGr
   }
 }
 
-resource blobPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
-  name: '${blobPrivateDnsZone.name}/${uniqueString(storage.id)}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetworkId
-    }
-  }
-}
+// resource blobPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
+//   name: '${blobPrivateDnsZone.name}/${uniqueString(storage.id)}'
+//   location: 'global'
+//   properties: {
+//     registrationEnabled: false
+//     virtualNetwork: {
+//       id: virtualNetworkId
+//     }
+//   }
+// }
 
-resource filePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
+resource filePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' existing = {
   name: filePrivateDnsZoneName
-  location: 'global'
+  scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
 }
 
 resource filePrivateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-06-01' = {
@@ -194,16 +199,15 @@ resource filePrivateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZo
   }
 }
 
-resource filePrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
-  name: '${filePrivateDnsZone.name}/${uniqueString(storage.id)}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetworkId
-    }
-  }
-}
-*/
+// resource filePrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-01-01' = {
+//   name: '${filePrivateDnsZone.name}/${uniqueString(storage.id)}'
+//   location: 'global'
+//   properties: {
+//     registrationEnabled: false
+//     virtualNetwork: {
+//       id: virtualNetworkId
+//     }
+//   }
+// }
 
 output storageId string = storage.id
