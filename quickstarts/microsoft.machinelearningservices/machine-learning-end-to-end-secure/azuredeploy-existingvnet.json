@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.4.1124.51302",
-      "templateHash": "13336292894767967462"
+      "version": "0.8.9.13224",
+      "templateHash": "5017295764440356536"
     }
   },
   "parameters": {
@@ -133,8 +133,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "8708237364207518697"
+              "version": "0.8.9.13224",
+              "templateHash": "11487519965310005244"
             }
           },
           "parameters": {
@@ -320,8 +320,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "14986353602877462723"
+              "version": "0.8.9.13224",
+              "templateHash": "10298747832049915863"
             }
           },
           "parameters": {
@@ -603,8 +603,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "12103291321852068668"
+              "version": "0.8.9.13224",
+              "templateHash": "2540933400382336876"
             }
           },
           "parameters": {
@@ -777,8 +777,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "6767610316462092334"
+              "version": "0.8.9.13224",
+              "templateHash": "10726233670597960275"
             }
           },
           "parameters": {
@@ -863,16 +863,16 @@
             "value": "[parameters('tags')]"
           },
           "applicationInsightsId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('appi-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix'))), '2020-10-01').outputs.applicationInsightsId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('appi-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.applicationInsightsId.value]"
           },
           "containerRegistryId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('cr{0}{1}-deployment', variables('name'), variables('uniqueSuffix'))), '2020-10-01').outputs.containerRegistryId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('cr{0}{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.containerRegistryId.value]"
           },
           "keyVaultId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('kv-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix'))), '2020-10-01').outputs.keyvaultId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('kv-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.keyvaultId.value]"
           },
           "storageAccountId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('st{0}{1}-deployment', variables('name'), variables('uniqueSuffix'))), '2020-10-01').outputs.storageId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('st{0}{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.storageId.value]"
           },
           "userAssignedMiID": {
             "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('uamiSubscriptionId'), parameters('uamiResourceGroupName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', parameters('uamiName'))]"
@@ -911,8 +911,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.4.1124.51302",
-              "templateHash": "11716408527534770156"
+              "version": "0.8.9.13224",
+              "templateHash": "6684199624860386174"
             }
           },
           "parameters": {
@@ -1101,8 +1101,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.4.1124.51302",
-                      "templateHash": "3788795612212027222"
+                      "version": "0.8.9.13224",
+                      "templateHash": "12301266657450122167"
                     }
                   },
                   "parameters": {
@@ -1266,8 +1266,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.4.1124.51302",
-                      "templateHash": "15486569377557188081"
+                      "version": "0.8.9.13224",
+                      "templateHash": "10797225116378631159"
                     }
                   },
                   "parameters": {
@@ -1431,8 +1431,8 @@
                           "metadata": {
                             "_generator": {
                               "name": "bicep",
-                              "version": "0.4.1124.51302",
-                              "templateHash": "8622269816027123446"
+                              "version": "0.8.9.13224",
+                              "templateHash": "5395838591021716197"
                             }
                           },
                           "parameters": {
