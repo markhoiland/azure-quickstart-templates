@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.8.9.13224",
-      "templateHash": "10895870778702948268"
+      "templateHash": "16232634658342427640"
     }
   },
   "parameters": {
@@ -78,6 +78,13 @@
         "description": "Jumphost virtual machine password"
       },
       "minLength": 8
+    },
+    "aksVersion": {
+      "type": "string",
+      "defaultValue": "1.23.8",
+      "metadata": {
+        "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically."
+      }
     },
     "amlComputePublicIp": {
       "type": "bool",
@@ -462,7 +469,7 @@
             "value": "[format('{0}/subnets/snet-training', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
           },
           "virtualNetworkId": {
-            "value": "[format('{0}', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value]"
           },
           "tags": {
             "value": "[parameters('tags')]"
@@ -657,7 +664,7 @@
             "value": "[format('{0}/subnets/snet-training', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
           },
           "virtualNetworkId": {
-            "value": "[format('{0}', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value]"
           },
           "tags": {
             "value": "[parameters('tags')]"
@@ -971,7 +978,7 @@
             "value": "[format('{0}/subnets/snet-training', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
           },
           "virtualNetworkId": {
-            "value": "[format('{0}', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value]"
           },
           "tags": {
             "value": "[parameters('tags')]"
@@ -1278,7 +1285,7 @@
             "value": "[format('{0}/subnets/snet-scoring', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
           },
           "virtualNetworkId": {
-            "value": "[format('{0}', reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value)]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('vnet-{0}-{1}-deployment', variables('name'), variables('uniqueSuffix')))).outputs.id.value]"
           },
           "machineLearningPleName": {
             "value": "[format('ple-{0}-{1}-mlw', variables('name'), variables('uniqueSuffix'))]"
@@ -1288,6 +1295,9 @@
           },
           "mlAksName": {
             "value": "[format('aks-{0}-{1}', variables('name'), variables('uniqueSuffix'))]"
+          },
+          "aksVersion": {
+            "value": "[parameters('aksVersion')]"
           }
         },
         "template": {
@@ -1297,7 +1307,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.8.9.13224",
-              "templateHash": "7996876308837980039"
+              "templateHash": "13364103359417658815"
             }
           },
           "parameters": {
@@ -1378,6 +1388,12 @@
               "type": "string",
               "metadata": {
                 "description": "Resource ID of the compute subnet"
+              }
+            },
+            "aksVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported."
               }
             },
             "aksSubnetId": {
@@ -1637,6 +1653,9 @@
                   "aksName": {
                     "value": "[parameters('mlAksName')]"
                   },
+                  "aksVersion": {
+                    "value": "[parameters('aksVersion')]"
+                  },
                   "aksSubnetId": {
                     "value": "[parameters('aksSubnetId')]"
                   },
@@ -1657,7 +1676,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.8.9.13224",
-                      "templateHash": "178626216782296482"
+                      "templateHash": "16099661512755517509"
                     }
                   },
                   "parameters": {
@@ -1695,6 +1714,12 @@
                       "type": "string",
                       "metadata": {
                         "description": "Name of the Azure Kubernetes services resource"
+                      }
+                    },
+                    "aksVersion": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported."
                       }
                     },
                     "aksSubnetId": {
@@ -1796,6 +1821,9 @@
                           "aksClusterName": {
                             "value": "[parameters('aksName')]"
                           },
+                          "aksVersion": {
+                            "value": "[parameters('aksVersion')]"
+                          },
                           "computeName": {
                             "value": "[parameters('aksName')]"
                           },
@@ -1813,7 +1841,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.8.9.13224",
-                              "templateHash": "6883116917303778367"
+                              "templateHash": "13558158898412393021"
                             }
                           },
                           "parameters": {
@@ -1852,6 +1880,12 @@
                               "metadata": {
                                 "description": "Name of the Azure Machine Learning attached compute"
                               }
+                            },
+                            "aksVersion": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically."
+                              }
                             }
                           },
                           "resources": [
@@ -1865,7 +1899,7 @@
                                 "type": "SystemAssigned"
                               },
                               "properties": {
-                                "kubernetesVersion": "1.22.4",
+                                "kubernetesVersion": "[parameters('aksVersion')]",
                                 "dnsPrefix": "[format('{0}-dns', parameters('aksClusterName'))]",
                                 "agentPoolProfiles": [
                                   {
