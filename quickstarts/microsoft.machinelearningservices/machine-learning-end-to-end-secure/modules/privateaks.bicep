@@ -17,6 +17,9 @@ param workspaceName string
 @description('Name of the Azure Machine Learning attached compute')
 param computeName string
 
+@description('Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically.')
+param aksVersion string
+
 resource aksCluster 'Microsoft.ContainerService/managedClusters@2020-07-01' = {
   name: aksClusterName
   location: location
@@ -25,7 +28,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2020-07-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    kubernetesVersion: '1.22.4'
+    kubernetesVersion: aksVersion
     dnsPrefix: '${aksClusterName}-dns'
     agentPoolProfiles: [
       {
