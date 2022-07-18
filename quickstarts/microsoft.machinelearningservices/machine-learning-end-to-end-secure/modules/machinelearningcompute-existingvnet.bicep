@@ -18,6 +18,9 @@ param computeSubnetId string
 @description('Name of the Azure Kubernetes services resource')
 param aksName string
 
+@description('Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported.')
+param aksVersion string
+
 @description('Resource ID of the Azure Kubernetes services resource')
 param aksSubnetId string
 
@@ -95,6 +98,7 @@ module machineLearningAksCompute 'privateaks-existingvnet.bicep' = {
     location: location
     tags: tags
     aksClusterName: aksName
+    aksVersion: aksVersion
     computeName: aksName
     aksSubnetId: aksSubnetId
     workspaceName: machineLearning

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.8.9.13224",
-      "templateHash": "5017295764440356536"
+      "templateHash": "1652563580421280975"
     }
   },
   "parameters": {
@@ -77,6 +77,13 @@
       "type": "string",
       "metadata": {
         "description": "Existing User-assigned managed identity Subscription ID"
+      }
+    },
+    "aksVersion": {
+      "type": "string",
+      "defaultValue": "1.23.8",
+      "metadata": {
+        "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically."
       }
     },
     "amlComputePublicIp": {
@@ -903,6 +910,9 @@
           },
           "mlAksName": {
             "value": "[format('aks-{0}-{1}', variables('name'), variables('uniqueSuffix'))]"
+          },
+          "aksVersion": {
+            "value": "[parameters('aksVersion')]"
           }
         },
         "template": {
@@ -912,7 +922,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.8.9.13224",
-              "templateHash": "6684199624860386174"
+              "templateHash": "17508842443468535833"
             }
           },
           "parameters": {
@@ -993,6 +1003,12 @@
               "type": "string",
               "metadata": {
                 "description": "Resource ID of the compute subnet"
+              }
+            },
+            "aksVersion": {
+              "type": "string",
+              "metadata": {
+                "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported."
               }
             },
             "aksSubnetId": {
@@ -1244,6 +1260,9 @@
                   "aksName": {
                     "value": "[parameters('mlAksName')]"
                   },
+                  "aksVersion": {
+                    "value": "[parameters('aksVersion')]"
+                  },
                   "aksSubnetId": {
                     "value": "[parameters('aksSubnetId')]"
                   },
@@ -1267,7 +1286,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.8.9.13224",
-                      "templateHash": "10797225116378631159"
+                      "templateHash": "17624241862266890757"
                     }
                   },
                   "parameters": {
@@ -1305,6 +1324,12 @@
                       "type": "string",
                       "metadata": {
                         "description": "Name of the Azure Kubernetes services resource"
+                      }
+                    },
+                    "aksVersion": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported."
                       }
                     },
                     "aksSubnetId": {
@@ -1412,6 +1437,9 @@
                           "aksClusterName": {
                             "value": "[parameters('aksName')]"
                           },
+                          "aksVersion": {
+                            "value": "[parameters('aksVersion')]"
+                          },
                           "computeName": {
                             "value": "[parameters('aksName')]"
                           },
@@ -1432,7 +1460,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.8.9.13224",
-                              "templateHash": "5395838591021716197"
+                              "templateHash": "16618344615986837375"
                             }
                           },
                           "parameters": {
@@ -1477,6 +1505,12 @@
                               "metadata": {
                                 "description": "User Assigned Managed Identity ID for Azure Machine Learning compute nodes"
                               }
+                            },
+                            "aksVersion": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically."
+                              }
                             }
                           },
                           "resources": [
@@ -1493,7 +1527,7 @@
                                 }
                               },
                               "properties": {
-                                "kubernetesVersion": "1.22.4",
+                                "kubernetesVersion": "[parameters('aksVersion')]",
                                 "dnsPrefix": "[format('{0}-dns', parameters('aksClusterName'))]",
                                 "agentPoolProfiles": [
                                   {

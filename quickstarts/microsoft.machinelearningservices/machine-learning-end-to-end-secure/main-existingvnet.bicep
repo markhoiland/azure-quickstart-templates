@@ -65,6 +65,9 @@ param uamiSubscriptionId string
 // @description('Jumphost virtual machine password')
 // param dsvmJumpboxPassword string
 
+@description('Kubernetes version. Both patch version {major.minor.patch} (e.g. 1.20.13) and {major.minor} (e.g. 1.20) are supported. When {major.minor} is specified, the latest supported GA patch version is chosen automatically.')
+param aksVersion string = '1.23.8'
+
 @description('Enable public IP for Azure Machine Learning compute nodes')
 param amlComputePublicIp bool = true
 
@@ -212,6 +215,7 @@ module azuremlWorkspace 'modules/machinelearning-existingvnet.bicep' = {
     // compute
     amlComputePublicIp: amlComputePublicIp
     mlAksName: 'aks-${name}-${uniqueSuffix}'
+    aksVersion: aksVersion
   }
   dependsOn: [
     keyvault
