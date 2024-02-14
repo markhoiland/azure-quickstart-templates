@@ -4,28 +4,21 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.25.53.49325",
-      "templateHash": "2964121064632283524"
+      "version": "0.4.1272.37030",
+      "templateHash": "9708615437742194950"
     }
   },
   "parameters": {
-    "appLocationPrim": {
+    "location": {
       "type": "string",
-      "defaultValue": "eastus",
-      "metadata": {
-        "description": "The location into which regionally scoped resources should be deployed. Note that Front Door is a global resource."
-      }
-    },
-    "appLocationSec": {
-      "type": "string",
-      "defaultValue": "westus",
+      "defaultValue": "[resourceGroup().location]",
       "metadata": {
         "description": "The location into which regionally scoped resources should be deployed. Note that Front Door is a global resource."
       }
     },
     "appName": {
       "type": "string",
-      "defaultValue": "afddemo",
+      "defaultValue": "[format('myapp-{0}', uniqueString(resourceGroup().id))]",
       "metadata": {
         "description": "The name of the App Service application to create. This must be globally unique."
       }
@@ -64,14 +57,11 @@
     }
   },
   "variables": {
-    "appServicePlanNamePrim": "[format('asp-{0}-{1}-{2}', parameters('appName'), parameters('appLocationPrim'), uniqueString(resourceGroup().id))]",
-    "appServicePlanNameSec": "[format('asp-{0}-{1}-{2}', parameters('appName'), parameters('appLocationSec'), uniqueString(resourceGroup().id))]",
-    "appNamePrim": "[format('app-{0}-{1}-{2}', parameters('appName'), parameters('appLocationPrim'), uniqueString(resourceGroup().id))]",
-    "appNameSec": "[format('app-{0}-{1}-{2}', parameters('appName'), parameters('appLocationSec'), uniqueString(resourceGroup().id))]",
-    "frontDoorProfileName": "[format('afd-{0}-{1}', parameters('appName'), uniqueString(resourceGroup().id))]",
-    "frontDoorOriginGroupName": "[format('afdog-{0}-{1}', parameters('appName'), uniqueString(resourceGroup().id))]",
-    "frontDoorOriginName": "[format('afdorigin-{0}-{1}', parameters('appName'), uniqueString(resourceGroup().id))]",
-    "frontDoorRouteName": "[format('afdroute-{0}-{1}', parameters('appName'), uniqueString(resourceGroup().id))]"
+    "appServicePlanName": "AppServicePlan",
+    "frontDoorProfileName": "MyFrontDoor",
+    "frontDoorOriginGroupName": "MyOriginGroup",
+    "frontDoorOriginName": "MyAppServiceOrigin",
+    "frontDoorRouteName": "MyRoute"
   },
   "resources": [
     {
@@ -86,8 +76,8 @@
     {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
-      "name": "[variables('appServicePlanNamePrim')]",
-      "location": "[parameters('appLocationPrim')]",
+      "name": "[variables('appServicePlanName')]",
+      "location": "[parameters('location')]",
       "sku": {
         "name": "[parameters('appServicePlanSkuName')]",
         "capacity": "[parameters('appServicePlanCapacity')]"
@@ -97,14 +87,14 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
-      "name": "[variables('appNamePrim')]",
-      "location": "[parameters('appLocationPrim')]",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
       "kind": "app",
       "identity": {
         "type": "SystemAssigned"
       },
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanNamePrim'))]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
         "httpsOnly": true,
         "siteConfig": {
           "detailedErrorLoggingEnabled": true,
@@ -120,7 +110,7 @@
               "priority": 100,
               "headers": {
                 "x-azure-fdid": [
-                  "[reference(resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName')), '2021-06-01').frontDoorId]"
+                  "[reference(resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))).frontDoorId]"
                 ]
               },
               "name": "Allow traffic from Front Door"
@@ -129,57 +119,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanNamePrim'))]",
-        "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2020-06-01",
-      "name": "[variables('appServicePlanNameSec')]",
-      "location": "[parameters('appLocationSec')]",
-      "sku": {
-        "name": "[parameters('appServicePlanSkuName')]",
-        "capacity": "[parameters('appServicePlanCapacity')]"
-      },
-      "kind": "app"
-    },
-    {
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2020-06-01",
-      "name": "[variables('appNameSec')]",
-      "location": "[parameters('appLocationSec')]",
-      "kind": "app",
-      "identity": {
-        "type": "SystemAssigned"
-      },
-      "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanNameSec'))]",
-        "httpsOnly": true,
-        "siteConfig": {
-          "detailedErrorLoggingEnabled": true,
-          "httpLoggingEnabled": true,
-          "requestTracingEnabled": true,
-          "ftpsState": "Disabled",
-          "minTlsVersion": "1.2",
-          "ipSecurityRestrictions": [
-            {
-              "tag": "ServiceTag",
-              "ipAddress": "AzureFrontDoor.Backend",
-              "action": "Allow",
-              "priority": 100,
-              "headers": {
-                "x-azure-fdid": [
-                  "[reference(resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName')), '2021-06-01').frontDoorId]"
-                ]
-              },
-              "name": "Allow traffic from Front Door"
-            }
-          ]
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanNameSec'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
         "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
       ]
     },
@@ -220,16 +160,17 @@
       "apiVersion": "2021-06-01",
       "name": "[format('{0}/{1}/{2}', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'), variables('frontDoorOriginName'))]",
       "properties": {
-        "hostName": "[reference(resourceId('Microsoft.Web/sites', variables('appNamePrim')), '2020-06-01').defaultHostName]",
+        "hostName": "[reference(resourceId('Microsoft.Web/sites', parameters('appName'))).defaultHostName]",
         "httpPort": 80,
         "httpsPort": 443,
-        "originHostHeader": "[reference(resourceId('Microsoft.Web/sites', variables('appNamePrim')), '2020-06-01').defaultHostName]",
+        "originHostHeader": "[reference(resourceId('Microsoft.Web/sites', parameters('appName'))).defaultHostName]",
         "priority": 1,
         "weight": 1000
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('appNamePrim'))]",
-        "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'))]"
+        "[resourceId('Microsoft.Web/sites', parameters('appName'))]",
+        "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'))]",
+        "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
       ]
     },
     {
@@ -254,22 +195,19 @@
       "dependsOn": [
         "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('frontDoorProfileName'), parameters('frontDoorEndpointName'))]",
         "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'), variables('frontDoorOriginName'))]",
-        "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'))]"
+        "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('frontDoorProfileName'), variables('frontDoorOriginGroupName'))]",
+        "[resourceId('Microsoft.Cdn/profiles', variables('frontDoorProfileName'))]"
       ]
     }
   ],
   "outputs": {
-    "appServiceHostNamePrim": {
+    "appServiceHostName": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Web/sites', variables('appNamePrim')), '2020-06-01').defaultHostName]"
-    },
-    "appServiceHostNameSec": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Web/sites', variables('appNameSec')), '2020-06-01').defaultHostName]"
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('appName'))).defaultHostName]"
     },
     "frontDoorEndpointHostName": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('frontDoorProfileName'), parameters('frontDoorEndpointName')), '2021-06-01').hostName]"
+      "value": "[reference(resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('frontDoorProfileName'), parameters('frontDoorEndpointName'))).hostName]"
     }
   }
 }

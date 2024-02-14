@@ -1,8 +1,11 @@
 @description('The location into which regionally scoped resources should be deployed. Note that Front Door is a global resource.')
-param location string = resourceGroup().location
+param appLocationPrim string = 'eastus'
+
+@description('The location into which regionally scoped resources should be deployed. Note that Front Door is a global resource.')
+param appLocationSec string = 'westus'
 
 @description('The name of the App Service application to create. This must be globally unique.')
-param appName string = 'myapp-${uniqueString(resourceGroup().id)}'
+param appName string = 'afddemo'
 
 @description('The name of the SKU to use when creating the App Service plan.')
 param appServicePlanSkuName string = 'S1'
@@ -20,12 +23,15 @@ param frontDoorEndpointName string = 'afd-${uniqueString(resourceGroup().id)}'
 ])
 param frontDoorSkuName string = 'Standard_AzureFrontDoor'
 
-var appServicePlanName = 'AppServicePlan'
+var appServicePlanNamePrim = 'asp-${appName}-${appLocationPrim}-${uniqueString(resourceGroup().id)}'
+var appServicePlanNameSec = 'asp-${appName}-${appLocationSec}-${uniqueString(resourceGroup().id)}'
+var appNamePrim = 'app-${appName}-${appLocationPrim}-${uniqueString(resourceGroup().id)}'
+var appNameSec = 'app-${appName}-${appLocationSec}-${uniqueString(resourceGroup().id)}'
 
-var frontDoorProfileName = 'MyFrontDoor'
-var frontDoorOriginGroupName = 'MyOriginGroup'
-var frontDoorOriginName = 'MyAppServiceOrigin'
-var frontDoorRouteName = 'MyRoute'
+var frontDoorProfileName = 'afd-${appName}-${uniqueString(resourceGroup().id)}'
+var frontDoorOriginGroupName = 'afdog-${appName}-${uniqueString(resourceGroup().id)}'
+var frontDoorOriginName = 'afdorigin-${appName}-${uniqueString(resourceGroup().id)}'
+var frontDoorRouteName = 'afdroute-${appName}-${uniqueString(resourceGroup().id)}'
 
 resource frontDoorProfile 'Microsoft.Cdn/profiles@2021-06-01' = {
   name: frontDoorProfileName
@@ -35,9 +41,9 @@ resource frontDoorProfile 'Microsoft.Cdn/profiles@2021-06-01' = {
   }
 }
 
-resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
-  name: appServicePlanName
-  location: location
+resource appServicePlanPrim 'Microsoft.Web/serverFarms@2020-06-01' = {
+  name: appServicePlanNamePrim
+  location: appLocationPrim
   sku: {
     name: appServicePlanSkuName
     capacity: appServicePlanCapacity
@@ -45,15 +51,59 @@ resource appServicePlan 'Microsoft.Web/serverFarms@2020-06-01' = {
   kind: 'app'
 }
 
-resource app 'Microsoft.Web/sites@2020-06-01' = {
-  name: appName
-  location: location
+resource appPrim 'Microsoft.Web/sites@2020-06-01' = {
+  name: appNamePrim
+  location: appLocationPrim
   kind: 'app'
   identity: {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: appServicePlanPrim.id
+    httpsOnly: true
+    siteConfig: {
+      detailedErrorLoggingEnabled: true
+      httpLoggingEnabled: true
+      requestTracingEnabled: true
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      ipSecurityRestrictions: [
+        {
+          tag: 'ServiceTag'
+          ipAddress: 'AzureFrontDoor.Backend'
+          action: 'Allow'
+          priority: 100
+          headers: {
+            'x-azure-fdid': [
+              frontDoorProfile.properties.frontDoorId
+            ]
+          }
+          name: 'Allow traffic from Front Door'
+        }
+      ]
+    }
+  }
+}
+
+resource appServicePlanSec 'Microsoft.Web/serverFarms@2020-06-01' = {
+  name: appServicePlanNameSec
+  location: appLocationSec
+  sku: {
+    name: appServicePlanSkuName
+    capacity: appServicePlanCapacity
+  }
+  kind: 'app'
+}
+
+resource appSec 'Microsoft.Web/sites@2020-06-01' = {
+  name: appNameSec
+  location: appLocationSec
+  kind: 'app'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: appServicePlanSec.id
     httpsOnly: true
     siteConfig: {
       detailedErrorLoggingEnabled: true
@@ -109,10 +159,10 @@ resource frontDoorOrigin 'Microsoft.Cdn/profiles/originGroups/origins@2021-06-01
   name: frontDoorOriginName
   parent: frontDoorOriginGroup
   properties: {
-    hostName: app.properties.defaultHostName
+    hostName: appPrim.properties.defaultHostName
     httpPort: 80
     httpsPort: 443
-    originHostHeader: app.properties.defaultHostName
+    originHostHeader: appPrim.properties.defaultHostName
     priority: 1
     weight: 1000
   }
@@ -141,5 +191,6 @@ resource frontDoorRoute 'Microsoft.Cdn/profiles/afdEndpoints/routes@2021-06-01' 
   }
 }
 
-output appServiceHostName string = app.properties.defaultHostName
+output appServiceHostNamePrim string = appPrim.properties.defaultHostName
+output appServiceHostNameSec string = appSec.properties.defaultHostName
 output frontDoorEndpointHostName string = frontDoorEndpoint.properties.hostName
