@@ -180,7 +180,7 @@ resource filePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-01-01' = {
 }
 
 resource filePrivateEndpointDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-06-01' = {
-  name: '${storagePrivateEndpointFile.name}/flie-PrivateDnsZoneGroup'
+  name: '${storagePrivateEndpointFile.name}/file-PrivateDnsZoneGroup'
   properties:{
     privateDnsZoneConfigs: [
       {
